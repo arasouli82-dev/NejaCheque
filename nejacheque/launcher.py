@@ -1,11 +1,13 @@
 """Desktop launcher: what the «نژا چک» icon runs.
 
-Starts the server on a free port (8080 by default), opens the browser, and prints the addresses
-other computers on the network can use. If Neja Cheque is already running on this computer, it
-just opens the browser at it instead of starting a second copy.
+Starts the server on a free port (8080 by default) and opens the browser. On Windows the program has
+no window: it lives as an icon next to the clock (nejacheque/tray.py) with the network address and
+«خاموش کردن» in its menu, so nobody stops it by closing a black window. Without a tray (Linux, or
+--no-tray) the addresses are printed and Ctrl+C stops it. If Neja Cheque is already running on this
+computer, it just opens the browser at it instead of starting a second copy.
 
     python -m nejacheque               # same as the icon
-    python -m nejacheque --port 9000 --no-browser
+    python -m nejacheque --port 9000 --no-browser --no-tray
 """
 from __future__ import annotations
 
@@ -26,6 +28,12 @@ STATE_FILE = "running.json"        # in the data folder: {"port": …} of the co
 
 
 def _console_utf8() -> None:
+    if sys.stdout is None or sys.stderr is None:      # windowed build: no console, keep output in a log file
+        settings.data_dir.mkdir(parents=True, exist_ok=True)
+        log = open(settings.data_dir / "nejacheque.log", "a", encoding="utf-8", buffering=1)
+        sys.stdout = sys.stdout or log
+        sys.stderr = sys.stderr or log
+        return
     for stream in (sys.stdout, sys.stderr):
         try:
             stream.reconfigure(encoding="utf-8")
@@ -36,6 +44,17 @@ def _console_utf8() -> None:
             import ctypes
             ctypes.windll.kernel32.SetConsoleOutputCP(65001)
             ctypes.windll.kernel32.SetConsoleTitleW("Neja Cheque — نژا چک")
+        except Exception:
+            pass
+
+
+def _alert(text: str) -> None:
+    """A message the user must see: a dialog when there is no console."""
+    print(text, flush=True)
+    if os.name == "nt" and getattr(sys, "frozen", False):
+        try:
+            import ctypes
+            ctypes.windll.user32.MessageBoxW(None, text, "نژا چک", 0x40)
         except Exception:
             pass
 
@@ -86,6 +105,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--port", type=int, default=int(os.getenv("PORT", "8080")))
     parser.add_argument("--host", default=os.getenv("NEJACHEQUE_HOST", "0.0.0.0"), help="0.0.0.0 = reachable from the network")
     parser.add_argument("--no-browser", action="store_true")
+    parser.add_argument("--no-tray", action="store_true", help="no icon next to the clock; Ctrl+C stops the server")
     args = parser.parse_args(argv)
     _console_utf8()
 
@@ -99,8 +119,7 @@ def main(argv: list[str] | None = None) -> None:
 
     port = next((p for p in range(args.port, args.port + 20) if _free(p)), None)
     if port is None:
-        print(f"درگاه {args.port} تا {args.port + 19} همه در استفاده‌اند؛ با --port درگاه دیگری بدهید.", flush=True)
-        input("برای بستن Enter بزنید…")
+        _alert(f"درگاه {args.port} تا {args.port + 19} همه در استفاده‌اند؛ با --port درگاه دیگری بدهید.")
         return
 
     import uvicorn
@@ -121,14 +140,30 @@ def main(argv: list[str] | None = None) -> None:
         for ip in _lan_addresses():
             print(f"  از رایانه‌های شبکه: http://{ip}:{port}")
         print(f"  پوشهٔ داده‌ها:     {settings.data_dir}", flush=True)
-        print("  تا وقتی این پنجره باز است، برنامه کار می‌کند. برای خاموش کردن، ببندیدش.", flush=True)
         print(line, flush=True)
         if not args.no_browser:
             webbrowser.open(f"http://localhost:{port}")
 
+    server = uvicorn.Server(uvicorn.Config(app, host=args.host, port=port, log_level="warning"))
     threading.Thread(target=announce, daemon=True).start()
     try:
-        uvicorn.run(app, host=args.host, port=port, log_level="warning")
+        if args.no_tray:
+            server.run()
+            return
+        worker = threading.Thread(target=server.run, daemon=True)
+        worker.start()
+        from nejacheque import tray
+
+        def stop() -> None:
+            server.should_exit = True
+
+        note = "" if args.no_browser else "برنامه کنار ساعت ویندوز است؛ برای باز کردن یا خاموش کردن روی آیکونش بزنید."
+        if not tray.run(port, _lan_addresses(), settings.data_dir, stop, note):
+            print("  برای خاموش کردن Ctrl+C بزنید.", flush=True)
+        while worker.is_alive():
+            worker.join(0.5)
+    except KeyboardInterrupt:
+        server.should_exit = True
     finally:
         try:
             (settings.data_dir / STATE_FILE).unlink()

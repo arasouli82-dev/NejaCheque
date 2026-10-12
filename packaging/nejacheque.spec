@@ -10,8 +10,8 @@ ROOT = os.path.abspath(os.path.join(SPECPATH, ".."))
 a = Analysis(
     [os.path.join(SPECPATH, "launch.py")],
     pathex=[ROOT],
-    datas=[(os.path.join(ROOT, "web"), "web")],
-    hiddenimports=collect_submodules("uvicorn") + ["nejacheque.app"],
+    datas=[(os.path.join(ROOT, "web"), "web"), (os.path.join(SPECPATH, "nejacheque.ico"), ".")],
+    hiddenimports=collect_submodules("uvicorn") + collect_submodules("pystray") + ["nejacheque.app", "nejacheque.tray"],
     excludes=["tkinter", "pytest", "IPython", "matplotlib", "numpy"],
     noarchive=False,
 )
@@ -21,7 +21,7 @@ exe = EXE(
     exclude_binaries=True,
     name="NejaCheque",
     icon=os.path.join(SPECPATH, "nejacheque.ico"),
-    console=True,               # the window shows the addresses; closing it stops the program
+    console=False,              # no black window: the program lives as an icon next to the clock (nejacheque/tray.py)
     upx=False,
 )
 coll = COLLECT(exe, a.binaries, a.datas, name="NejaCheque", upx=False)

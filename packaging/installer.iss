@@ -48,6 +48,7 @@ Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""N
 Filename: "{app}\NejaCheque.exe"; Description: "Open Neja Cheque now"; Flags: postinstall nowait skipifsilent
 
 [UninstallRun]
+Filename: "{sys}\taskkill.exe"; Parameters: "/F /IM NejaCheque.exe"; Flags: runhidden; RunOnceId: "StopNejaCheque"
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""Neja Cheque"""; Flags: runhidden; RunOnceId: "NejaChequeFirewall"
 
 ; The database in %ProgramData%\NejaCheque is kept on uninstall, so a reinstall or upgrade keeps every cheque.
