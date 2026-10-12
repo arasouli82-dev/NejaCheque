@@ -8,5 +8,5 @@ if [ ! -d .venv ]; then
   .venv/bin/pip install -r requirements.txt
 fi
 PORT="${PORT:-8080}"
-echo "Neja Cheque: http://localhost:$PORT"
-exec .venv/bin/python -m uvicorn nejacheque.app:app --host 0.0.0.0 --port "$PORT"
+# the launcher prints the addresses and opens the browser
+exec .venv/bin/python -m nejacheque --port "$PORT"

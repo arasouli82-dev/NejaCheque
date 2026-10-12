@@ -8,5 +8,5 @@ if not exist .venv (
   .venv\Scripts\python.exe -m pip install -r requirements.txt
 )
 if "%PORT%"=="" set PORT=8080
-echo Neja Cheque: http://localhost:%PORT%
-.venv\Scripts\python.exe -m uvicorn nejacheque.app:app --host 0.0.0.0 --port %PORT%
+rem the launcher prints the addresses and opens the browser
+.venv\Scripts\python.exe -m nejacheque --port %PORT%

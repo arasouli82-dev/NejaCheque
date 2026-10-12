@@ -1,0 +1,84 @@
+# Builds the downloads when a version tag is pushed (git tag v1.0.1 && git push --tags):
+#   * Windows installer  NejaCheque-Setup-<version>.exe  and a portable zip, attached to the GitHub release
+#   * Docker image       ghcr.io/<owner>/nejacheque:<version> and :latest
+# "Run workflow" on the Actions tab builds the Windows files without publishing a release.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -r requirements.txt pyinstaller
+      - name: Version
+        shell: pwsh
+        run: |
+          $v = python -c "import nejacheque; print(nejacheque.__version__)"
+          if ("${{ github.ref_type }}" -eq "tag" -and "${{ github.ref_name }}" -ne "v$v") { throw "tag ${{ github.ref_name }} does not match version $v in nejacheque/__init__.py" }
+          "VERSION=$v" >> $env:GITHUB_ENV
+      - name: Build program folder
+        run: pyinstaller packaging/nejacheque.spec --noconfirm
+      - name: Smoke test
+        shell: pwsh
+        run: |
+          $env:NEJACHEQUE_DATA_DIR = "$env:RUNNER_TEMP\nc-data"; $env:NEJACHEQUE_REMINDERS = "0"
+          $p = Start-Process dist\NejaCheque\NejaCheque.exe -ArgumentList "--no-browser","--port","8180" -PassThru
+          $ok = $false
+          foreach ($i in 1..30) { Start-Sleep 1; try { if ((Invoke-RestMethod http://127.0.0.1:8180/health).ok) { $ok = $true; break } } catch {} }
+          Stop-Process $p.Id -Force
+          if (-not $ok) { throw "NejaCheque.exe did not start" }
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress }
+          & $iscc "/DAppVersion=$env:VERSION" packaging\installer.iss
+      - name: Portable zip
+        shell: pwsh
+        run: Compress-Archive -Path dist\NejaCheque\* -DestinationPath "dist\NejaCheque-Portable-$env:VERSION.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: |
+            dist/NejaCheque-Setup-*.exe
+            dist/NejaCheque-Portable-*.zip
+      - name: Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/NejaCheque-Setup-*.exe
+            dist/NejaCheque-Portable-*.zip
+
+  docker:
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Image name
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/nejacheque" >> $GITHUB_ENV
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ github.ref_name }}
+            ${{ env.IMAGE }}:latest

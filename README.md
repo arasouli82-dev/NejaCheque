@@ -28,21 +28,46 @@
 - **یادآوری سررسید** در برنامه، در پیام‌رسان **بله** و با **پیامک** (کاوه‌نگار، SMS.ir)
 - **کاربران** با دو نقش مدیر و کاربر، **پشتیبان‌گیری و بازگردانی**، تم روشن و تاریک
 
-## اجرا
+## نصب
 
-**ویندوز:** پایتون ۳.۱۰ یا تازه‌تر را نصب کنید، `run.bat` را اجرا کنید و <http://localhost:8080> را باز کنید.
+### ویندوز (ساده‌ترین راه)
 
-**لینوکس / مک:**
+۱. از صفحهٔ [**Releases**](../../releases/latest) فایل `NejaCheque-Setup-….exe` را بگیرید.
+۲. اجرایش کنید و چند بار «Next» بزنید. به پایتون یا هیچ برنامهٔ دیگری نیاز نیست.
+۳. روی آیکون **«نژا چک»** روی دسکتاپ بزنید؛ مرورگر باز می‌شود و حساب مدیر را می‌سازید.
+
+<details>
+<summary>ویندوز گفت «Windows protected your PC»؟</summary>
+
+این هشدار برای همهٔ برنامه‌هایی است که امضای دیجیتال پولی ندارند. روی **More info** و بعد **Run anyway** بزنید.
+</details>
+
+**برای همهٔ اداره:** نژا چک را روی یک رایانه نصب کنید که بیشتر وقت‌ها روشن است، و در نصب این دو گزینه را بزنید:
+«Start Neja Cheque when Windows starts» و «Let other computers on the network open it».
+پنجرهٔ نژا چک نشانی شبکه را نشان می‌دهد (مثل `http://192.168.1.20:8080`)؛ همکاران همین نشانی را در مرورگرشان باز می‌کنند. کاربر هر کس را از «تنظیمات ← کاربران» بسازید.
+
+داده‌ها در `C:\ProgramData\NejaCheque` است و با حذف یا به‌روزرسانی برنامه پاک نمی‌شود.
+اگر نصب نمی‌خواهید، نسخهٔ `NejaCheque-Portable-….zip` را باز کنید و `NejaCheque.exe` را اجرا کنید.
+
+### سرور لینوکس (داکر)
+
 ```bash
-./run.sh
+docker run -d --name nejacheque -p 8080:8080 -v nejacheque:/data --restart unless-stopped ghcr.io/USERNAME/nejacheque:latest
 ```
 
-**داکر:**
-```bash
-docker compose up -d
-```
+بعد `http://<IP-سرور>:8080` را باز کنید. اگر پشت HTTPS اجرا می‌کنید، `-e NEJACHEQUE_COOKIE_SECURE=1` اضافه کنید.
 
-در اولین ورود، **حساب مدیر** را می‌سازید؛ کاربرهای دیگر را از «تنظیمات ← کاربران» اضافه کنید. رایانه‌های دیگر شبکه از `http://<IP-سرور>:8080` وارد می‌شوند. اگر پشت HTTPS اجرا می‌کنید، `NEJACHEQUE_COOKIE_SECURE=1` بگذارید.
+### از روی کد
+
+با پایتون ۳.۱۰ یا تازه‌تر: در ویندوز `run.bat` و در لینوکس/مک `./run.sh`. یا `docker compose up -d`.
+
+## انتشار نسخهٔ تازه
+
+شمارهٔ نسخه را در `nejacheque/__init__.py` بالا ببرید، بعد:
+```bash
+git tag v1.0.1 && git push --tags
+```
+گیت‌هاب خودش فایل نصب ویندوز، نسخهٔ قابل‌حمل و تصویر داکر را می‌سازد و در صفحهٔ Releases می‌گذارد (`.github/workflows/release.yml`).
 
 ## تنظیمات
 
@@ -113,10 +138,9 @@ pytest
 
 **Neja Cheque** is a self-hosted web app by **Ali Rasoulinejad (Neja)** for writing, printing and tracking Iranian Sayad cheques: true-size layout editor with drag-and-drop templates for 30 banks and custom leaves, amounts and dates in Persian words, chequebook leaf tracking, issued and received cheque registers, Excel/CSV import, official holidays, receipts, Bale and SMS due-date reminders, multi-user with manager/operator roles, backup and restore.
 
-```bash
-./run.sh            # or run.bat on Windows, or: docker compose up -d
-# open http://localhost:8080 and create the first (manager) account
-```
+- **Windows:** download `NejaCheque-Setup-….exe` from [Releases](../../releases/latest), install, click the «نژا چک» icon.
+- **Linux server:** `docker run -d -p 8080:8080 -v nejacheque:/data ghcr.io/USERNAME/nejacheque:latest`
+- **From source:** `./run.sh` (or `run.bat`), then create the first (manager) account in the browser.
 
 Settings via environment variables (see `.env.example`). Tests: `pip install -r requirements-dev.txt && pytest`. License: MIT.
 
