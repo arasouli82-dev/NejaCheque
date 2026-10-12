@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تبدیل تاریخ به حروف | تاریخ شمسی به حروف برای چک و تبدیل میلادی به شمسی</title>
+<meta name="description" content="تبدیل آنلاین تاریخ شمسی به حروف (مثل «نوزدهم آبان ماه یک هزار و چهارصد و پنج») برای چک و اسناد، و تبدیل تاریخ میلادی به شمسی.">
+<link rel="canonical" href="https://arasouli82-dev.github.io/NejaCheque/tarikh-be-horouf/">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<meta name="theme-color" content="#1B3170">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="fa_IR">
+<meta property="og:site_name" content="نژا چک">
+<meta property="og:title" content="تبدیل تاریخ به حروف | تاریخ شمسی به حروف برای چک و تبدیل میلادی به شمسی">
+<meta property="og:description" content="تبدیل آنلاین تاریخ شمسی به حروف (مثل «نوزدهم آبان ماه یک هزار و چهارصد و پنج») برای چک و اسناد، و تبدیل تاریخ میلادی به شمسی.">
+<meta property="og:url" content="https://arasouli82-dev.github.io/NejaCheque/tarikh-be-horouf/">
+<meta property="og:image" content="https://arasouli82-dev.github.io/NejaCheque/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "نژا چک", "item": "https://arasouli82-dev.github.io/NejaCheque/"}, {"@type": "ListItem", "position": 2, "name": "تبدیل تاریخ به حروف", "item": "https://arasouli82-dev.github.io/NejaCheque/tarikh-be-horouf/"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "تاریخ چک را چطور به حروف بنویسم؟", "acceptedAnswer": {"@type": "Answer", "text": "روز را با عدد ترتیبی (مثل «نوزدهم»)، بعد نام ماه و واژهٔ «ماه» و سپس سال را کامل به حروف بنویسید: «نوزدهم آبان ماه یک هزار و چهارصد و پنج»."}}, {"@type": "Question", "name": "سال را «هزار و چهارصد» بنویسم یا «یک هزار و چهارصد»؟", "acceptedAnswer": {"@type": "Answer", "text": "در چک و اسناد رسمی «یک هزار و چهارصد و …» رایج‌تر و مطمئن‌تر است."}}, {"@type": "Question", "name": "کبیسه بودن سال حساب می‌شود؟", "acceptedAnswer": {"@type": "Answer", "text": "بله. تبدیل با الگوریتم دقیق تقویم جلالی انجام می‌شود و سال‌های کبیسه را درست حساب می‌کند."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "تبدیل تاریخ به حروف", "url": "https://arasouli82-dev.github.io/NejaCheque/tarikh-be-horouf/", "applicationCategory": "UtilitiesApplication", "operatingSystem": "All", "inLanguage": "fa", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "IRR"}, "description": "تبدیل آنلاین تاریخ شمسی به حروف (مثل «نوزدهم آبان ماه یک هزار و چهارصد و پنج») برای چک و اسناد، و تبدیل تاریخ میلادی به شمسی.", "author": {"@type": "Person", "name": "علی رسولی‌نژاد", "alternateName": "Ali Rasoulinejad", "sameAs": ["https://www.linkedin.com/in/ali-rasoulinejad-bb400b243", "https://github.com/arasouli82-dev"]}}</script>
+</head>
+<body>
+<header class="wrap top">
+  <a class="brand" href="../"><img src="../favicon.svg" alt="">نژا چک</a>
+  <nav><a href="../demo/">امتحان آنلاین</a><a href="../adad-be-horouf/">عدد به حروف</a><a href="../tarikh-be-horouf/">تاریخ به حروف</a><a href="../kod-melli/">کد ملی</a><a href="../chap-check-sayadi/">آموزش</a></nav>
+</header>
+<main class="wrap page">
+  <div class="crumbs"><a href="../">نژا چک</a> / تبدیل تاریخ به حروف</div>
+  <h1>تبدیل تاریخ به حروف</h1>
+  <p class="lead">تاریخ شمسی را بدهید تا به حروف نوشته شود؛ همان شکلی که در چک و قرارداد لازم است. تاریخ میلادی را هم به شمسی تبدیل می‌کند.</p>
+  <div class="tool">
+    <label for="j">تاریخ شمسی</label>
+    <input id="j" inputmode="numeric" autocomplete="off" placeholder="۱۴۰۵/۰۸/۱۹">
+    <div><div class="out" id="w" aria-live="polite"></div><button class="copy" id="cw" type="button">کپی متن</button></div>
+    <div class="out small" id="x"></div>
+  </div>
+  <div class="tool" style="margin-top:16px">
+    <label for="g">یا تاریخ میلادی</label>
+    <input id="g" type="date">
+    <div class="out small" id="gx"></div>
+  </div>
+  <div class="promo">
+    <div><b>چک را هم خودکار بنویسید</b><p>نژا چک مبلغ و تاریخ را خودش به حروف می‌نویسد و روی برگهٔ چک صیادی همهٔ بانک‌ها چاپ می‌کند. رایگان.</p></div>
+    <a class="btn" href="../demo/">امتحان آنلاین</a>
+    <a class="btn" href="https://github.com/arasouli82-dev/NejaCheque/releases/latest">دانلود رایگان</a>
+  </div>
+  <section style="border:0;padding-block:36px 0"><h2>پرسش‌های رایج</h2><details><summary>تاریخ چک را چطور به حروف بنویسم؟</summary><p>روز را با عدد ترتیبی (مثل «نوزدهم»)، بعد نام ماه و واژهٔ «ماه» و سپس سال را کامل به حروف بنویسید: «نوزدهم آبان ماه یک هزار و چهارصد و پنج».</p></details><details><summary>سال را «هزار و چهارصد» بنویسم یا «یک هزار و چهارصد»؟</summary><p>در چک و اسناد رسمی «یک هزار و چهارصد و …» رایج‌تر و مطمئن‌تر است.</p></details><details><summary>کبیسه بودن سال حساب می‌شود؟</summary><p>بله. تبدیل با الگوریتم دقیق تقویم جلالی انجام می‌شود و سال‌های کبیسه را درست حساب می‌کند.</p></details></section>
+</main>
+<footer>
+  <div class="wrap">
+    <span>نژا چک، ساختهٔ <a href="https://www.linkedin.com/in/ali-rasoulinejad-bb400b243">علی رسولی‌نژاد</a> · نژا</span>
+    <span><a href="../adad-be-horouf/">عدد به حروف</a> · <a href="../tarikh-be-horouf/">تاریخ به حروف</a> · <a href="../kod-melli/">بررسی کد ملی</a> · <a href="../chap-check-sayadi/">آموزش چاپ چک</a> · <a href="https://github.com/arasouli82-dev/NejaCheque">گیت‌هاب</a></span>
+  </div>
+</footer>
+<script src="../assets/core.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+function copyBtn(btn, get) {
+  btn.addEventListener("click", () => {
+    const t = get(); if (!t) return;
+    const done = () => { const old = btn.textContent; btn.textContent = "کپی شد"; setTimeout(() => btn.textContent = old, 1200); };
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(done, () => {
+      const r = document.createRange(); r.selectNodeContents(btn.previousElementSibling); getSelection().removeAllRanges(); getSelection().addRange(r); });
+  });
+}
+
+const j = $("#j"), g = $("#g");
+j.value = toFa(dateStr(todayJ()));
+function run() {
+  const d = parseJ(j.value);
+  if (!d) { $("#w").textContent = j.value.trim() ? "تاریخ را مثل ۱۴۰۵/۰۸/۱۹ بنویسید" : ""; $("#x").textContent = ""; return; }
+  $("#w").textContent = dateWords(d);
+  const gd = d2g(jdnOf(d)), diff = jdnOf(d) - jdnOf(todayJ());
+  const rel = diff === 0 ? "امروز" : diff > 0 ? toFa(diff) + " روز دیگر" : toFa(-diff) + " روز پیش";
+  $("#x").textContent = `${weekday(d)}، ${rel} · میلادی: ${gd.gy}-${pad2(gd.gm)}-${pad2(gd.gd)}`;
+}
+g.addEventListener("input", () => {
+  if (!g.value) return;
+  const [y, m, dd] = g.value.split("-").map(Number), d = d2j(g2d(y, m, dd));
+  j.value = toFa(dateStr(d)); run();
+  $("#gx").textContent = `شمسی: ${toFa(dateStr(d))}، ${weekday(d)}`;
+});
+j.addEventListener("input", run); run();
+copyBtn($("#cw"), () => $("#w").textContent);
+</script>
+</body>
+</html>

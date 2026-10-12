@@ -1983,6 +1983,15 @@ if (CFG.standalone) {
     foot.addEventListener("click", async e => { e.preventDefault(); await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" }).catch(() => {}); location.href = CFG.loginUrl; });
   }
 }
+if (CFG.demo) {         // the online demo on the website: everything stays in this browser
+  const foot = document.querySelector(".sidebar-foot .btn");
+  if (foot) { foot.href = CFG.downloadUrl; foot.title = "دانلود نسخهٔ کامل"; foot.querySelector(".sidebar-menu-label").textContent = "دانلود نسخهٔ کامل"; }
+  const bar = document.createElement("div");
+  bar.className = "card due-strip";
+  bar.innerHTML = `<span class="grow">این نسخهٔ آنلاین ${esc(CFG.product)} است: همه‌چیز فقط در همین مرورگر می‌ماند و چاپ روی برگهٔ واقعی هم کار می‌کند. برای کار چندنفره در اداره، دسته‌چک مشترک و یادآوری با پیامک، نسخهٔ رایگان را نصب کنید.</span>`
+    + `<a class="btn sm primary" href="${esc(CFG.downloadUrl)}">دانلود رایگان</a>`;
+  document.querySelector('[data-pane="issue"]').prepend(bar);
+}
 (async function boot() {
   await bootServer().catch(() => false);
   setSync("ok");
