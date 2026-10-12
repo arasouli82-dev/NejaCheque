@@ -52,7 +52,7 @@
 ### سرور لینوکس (داکر)
 
 ```bash
-docker run -d --name nejacheque -p 8080:8080 -v nejacheque:/data --restart unless-stopped ghcr.io/USERNAME/nejacheque:latest
+docker run -d --name nejacheque -p 8080:8080 -v nejacheque:/data --restart unless-stopped ghcr.io/arasouli82-dev/nejacheque:latest
 ```
 
 بعد `http://<IP-سرور>:8080` را باز کنید. اگر پشت HTTPS اجرا می‌کنید، `-e NEJACHEQUE_COOKIE_SECURE=1` اضافه کنید.
@@ -139,7 +139,7 @@ pytest
 **Neja Cheque** is a self-hosted web app by **Ali Rasoulinejad (Neja)** for writing, printing and tracking Iranian Sayad cheques: true-size layout editor with drag-and-drop templates for 30 banks and custom leaves, amounts and dates in Persian words, chequebook leaf tracking, issued and received cheque registers, Excel/CSV import, official holidays, receipts, Bale and SMS due-date reminders, multi-user with manager/operator roles, backup and restore.
 
 - **Windows:** download `NejaCheque-Setup-….exe` from [Releases](../../releases/latest), install, click the «نژا چک» icon.
-- **Linux server:** `docker run -d -p 8080:8080 -v nejacheque:/data ghcr.io/USERNAME/nejacheque:latest`
+- **Linux server:** `docker run -d -p 8080:8080 -v nejacheque:/data ghcr.io/arasouli82-dev/nejacheque:latest`
 - **From source:** `./run.sh` (or `run.bat`), then create the first (manager) account in the browser.
 
 Settings via environment variables (see `.env.example`). Tests: `pip install -r requirements-dev.txt && pytest`. License: MIT.
