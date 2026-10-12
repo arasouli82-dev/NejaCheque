@@ -19,7 +19,7 @@ DOCS = Path(__file__).resolve().parent.parent / "docs"
 AUTHOR = {"@type": "Person", "name": "علی رسولی‌نژاد", "alternateName": "Ali Rasoulinejad",
           "sameAs": ["https://www.linkedin.com/in/ali-rasoulinejad-bb400b243", "https://github.com/arasouli82-dev"]}
 
-NAV = [("demo/", "امتحان آنلاین"), ("adad-be-horouf/", "عدد به حروف"), ("tarikh-be-horouf/", "تاریخ به حروف"),
+NAV = [("demo/", "چک چاپ آنلاین"), ("adad-be-horouf/", "عدد به حروف"), ("tarikh-be-horouf/", "تاریخ به حروف"),
        ("kod-melli/", "کد ملی"), ("chap-check-sayadi/", "آموزش")]
 
 
@@ -71,7 +71,7 @@ def page(slug: str, title: str, description: str, h1: str, lead: str, body: str,
   <p class="lead">{lead}</p>
   {body}
   <div class="promo">
-    <div><b>چک را هم خودکار بنویسید</b><p>نژا چک مبلغ و تاریخ را خودش به حروف می‌نویسد و روی برگهٔ چک صیادی همهٔ بانک‌ها چاپ می‌کند. رایگان.</p></div>
+    <div><b>نرم‌افزار چک چاپ رایگان</b><p>نژا چک مبلغ و تاریخ را خودش به حروف می‌نویسد و روی برگهٔ چک صیادی همهٔ بانک‌ها چاپ می‌کند. رایگان.</p></div>
     <a class="btn" href="../demo/">امتحان آنلاین</a>
     <a class="btn" href="{DOWNLOAD}">دانلود رایگان</a>
   </div>
@@ -80,7 +80,7 @@ def page(slug: str, title: str, description: str, h1: str, lead: str, body: str,
 <footer>
   <div class="wrap">
     <span>نژا چک، ساختهٔ <a href="https://www.linkedin.com/in/ali-rasoulinejad-bb400b243">علی رسولی‌نژاد</a> · نژا</span>
-    <span><a href="../adad-be-horouf/">عدد به حروف</a> · <a href="../tarikh-be-horouf/">تاریخ به حروف</a> · <a href="../kod-melli/">بررسی کد ملی</a> · <a href="../chap-check-sayadi/">آموزش چاپ چک</a> · <a href="{REPO}">گیت‌هاب</a></span>
+    <span><a href="../adad-be-horouf/">عدد به حروف</a> · <a href="../tarikh-be-horouf/">تاریخ به حروف</a> · <a href="../kod-melli/">بررسی کد ملی</a> · <a href="../chap-check-sayadi/">آموزش چک چاپ</a> · <a href="{REPO}">گیت‌هاب</a></span>
   </div>
 </footer>
 <script src="../assets/core.js"></script>
@@ -210,7 +210,7 @@ c.addEventListener("input", run);''',
 # ---------------------------------------------------------------- guide
 d = "آموزش قدم‌به‌قدم چاپ چک صیادی با پرینتر معمولی یا لیزری A4: ابزار رایگان، تنظیم برگه، چاپ آزمایشی، نکته‌های امنیتی و ثبت در سامانهٔ صیاد."
 steps = [
-    ("نرم‌افزار را آماده کنید", "نژا چک را رایگان دانلود و نصب کنید، یا همین حالا نسخهٔ آنلاین آن را در مرورگر باز کنید."),
+    ("نرم‌افزار چک چاپ را آماده کنید", "نژا چک را رایگان دانلود و نصب کنید، یا همین حالا نسخهٔ آنلاین آن را در مرورگر باز کنید."),
     ("بانک را انتخاب کنید", "چک‌های صیادی جدید در همهٔ بانک‌ها یک چیدمان دارند. بانک خود را انتخاب کنید تا قالب درست بیاید."),
     ("مشخصات چک را بنویسید", "مبلغ، تاریخ سررسید و نام گیرنده را وارد کنید. مبلغ و تاریخ خودکار به حروف نوشته می‌شوند."),
     ("یک چاپ آزمایشی بگیرید", "روی کاغذ سفید چاپ کنید و جلوی نور روی برگهٔ چک بگذارید. اگر نوشته‌ها جابه‌جا بودند، در «ویرایش چیدمان» تنظیمشان کنید."),
@@ -226,8 +226,8 @@ article = {"@context": "https://schema.org", "@type": "Article", "headline": "آ
            "mainEntityOfPage": SITE + "chap-check-sayadi/"}
 steps_html = "".join(f"<li><b>{n}</b><span>{t}</span></li>" for n, t in steps)
 PAGES["chap-check-sayadi/"] = page(
-    "chap-check-sayadi/", "آموزش چاپ چک صیادی با پرینتر معمولی (رایگان، قدم‌به‌قدم)", d,
-    "آموزش چاپ چک صیادی با پرینتر معمولی", "برای چاپ چک صیادی به چاپگر مخصوص یا نرم‌افزار پولی نیاز ندارید. در شش قدم، با همان چاپگر اداره چک تمیز و بی‌غلط چاپ کنید.",
+    "chap-check-sayadi/", "آموزش چک چاپ: چاپ چک صیادی با پرینتر معمولی (رایگان، قدم‌به‌قدم)", d,
+    "آموزش چاپ چک صیادی با پرینتر معمولی", "برای چاپ چک صیادی به چاپگر مخصوص یا نرم‌افزار چک چاپ پولی نیاز ندارید. در شش قدم، با همان چاپگر اداره چک تمیز و بی‌غلط چاپ کنید.",
     f'''<ol class="steps">{steps_html}</ol>
   <div class="article">
     <h2>چرا نوشتن چک با دست یا Word دردسر دارد؟</h2>

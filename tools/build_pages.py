@@ -26,12 +26,12 @@ def main(out: Path) -> None:
         ('window.CHEQUE_CONFIG = {standalone: true, product: "نژا چک", serverName: "نژا چک", loginUrl: "/login"};',
          f'window.CHEQUE_CONFIG = {{standalone: false, demo: true, product: "نژا چک", serverName: "نژا چک", downloadUrl: "{DOWNLOAD}"}};'),
         ("<title>نژا چک</title>",
-         "<title>چاپ چک آنلاین رایگان | نژا چک</title>\n"
+         "<title>چک چاپ آنلاین رایگان | نژا چک</title>\n"
          f'<link rel="canonical" href="{SITE}demo/">\n'
          f'<meta property="og:image" content="{SITE}og.jpg">\n'
-         '<meta property="og:title" content="چاپ چک آنلاین رایگان | نژا چک">'),
+         '<meta property="og:title" content="چک چاپ آنلاین رایگان | نژا چک">'),
         ('<meta name="description" content="نژا چک: صدور، چاپ و پیگیری چک‌های صیادی — ساختهٔ علی رسولی‌نژاد">',
-         '<meta name="description" content="چاپ چک صیادی آنلاین و رایگان در مرورگر، بدون نصب: قالب همهٔ بانک‌ها، مبلغ و تاریخ به حروف، چاپ با هر پرینتری.">'),
+         '<meta name="description" content="چک چاپ آنلاین و رایگان: چاپ چک صیادی در مرورگر، بدون نصب؛ قالب همهٔ بانک‌ها، مبلغ و تاریخ به حروف، چاپ با هر پرینتری.">'),
     ]
     for old, new in replacements:
         if old not in html:
