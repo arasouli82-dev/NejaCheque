@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نژا چک</title>
+<meta name="theme-color" id="metaThemeColor" content="#05070C">
+<meta name="description" content="نژا چک: صدور، چاپ و پیگیری چک‌های صیادی — ساختهٔ علی رسولی‌نژاد">
+<link rel="icon" type="image/svg+xml" href="assets/brand/favicon.svg">
+<link rel="stylesheet" href="assets/ui/tokens.css">
+<link rel="stylesheet" href="assets/ui/base.css">
+<link rel="stylesheet" href="assets/ui/capsule.css">
+<link rel="stylesheet" href="assets/ui/shell.css">
+<link rel="stylesheet" href="assets/brand/brand.css">
+<!-- fonts: Google Fonts; to work without internet, see README «فونت‌ها بدون اینترنت» -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400..800&family=Noto+Naskh+Arabic:wght@400..700&family=Noto+Nastaliq+Urdu:wght@400..700&family=Lalezar&display=swap">
+<script>
+  window.ODIQ_UI_CONFIG = {storagePrefix: "nejacheque", defaultTheme: "auto"};
+  window.CHEQUE_CONFIG = {standalone: true, product: "نژا چک", serverName: "نژا چک", loginUrl: "/login"};
+</script>
+<script src="assets/brand/brand.js"></script>
+<script src="assets/ui/ui.js"></script>
+<style>
+/* Neja Cheque — page-level pieces on top of the UI kit tokens (assets/ui/tokens.css) */
+[hidden]{display:none!important}
+.view-inner.wide{max-width:1520px}
+.topbar .btn{white-space:nowrap}
+@media (max-width:720px){.topbar .tabs{display:none}}
+.issue{display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:1100px){.issue{grid-template-columns:minmax(0,1fr)}}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.field .in-row{display:flex;gap:8px;align-items:center}
+.field .in-row>input,.field .in-row>select{flex:1;min-width:0}
+input.num{direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
+input.big{font-size:20px;font-weight:700;font-family:var(--font-mono);padding:10px 12px}
+.words{font:15px/1.95 "Noto Naskh Arabic",var(--font-fa);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);border-radius:var(--radius-s);padding:6px 10px;min-height:2.4em}
+.good{color:var(--brand-green)}
+.bad{color:var(--danger)}
+.date3{display:grid;grid-template-columns:72px 1fr 86px;gap:6px}
+.bank-dot{width:12px;height:12px;border-radius:50%;flex:none;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 18%,transparent)}
+.sub-sec{border-top:1px solid var(--line);padding-top:12px;margin-top:4px}
+details.sub-sec summary{cursor:pointer;font-weight:600;font-size:var(--text-base);list-style:none;display:flex;align-items:center;gap:6px;color:var(--ink-soft)}
+details.sub-sec summary::before{content:"‹";transition:transform .18s ease;display:inline-block;color:var(--ink-faint)}
+details.sub-sec[open] summary::before{transform:rotate(-90deg)}
+details.sub-sec>div{padding-top:12px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 10px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 10px}
+@media (max-width:720px){.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.flags{display:flex;gap:6px;flex-wrap:wrap}
+.pill-warn{border-color:color-mix(in srgb,var(--danger) 35%,transparent);color:var(--danger)}
+.pill-gold{border-color:color-mix(in srgb,var(--warn) 40%,transparent);color:var(--warn)}
+.pill-ok{border-color:color-mix(in srgb,var(--brand-green) 35%,transparent);color:var(--brand-green)}
+
+/* stage */
+.stage-wrap{border-radius:var(--radius-m);padding:26px 20px;border:1px solid var(--line);
+  background:radial-gradient(circle at 1px 1px,var(--line-strong) 1px,transparent 1.4px) 0 0/18px 18px,var(--paper-2)}
+.stage{position:relative;width:100%;touch-action:none;outline:none}
+.stage-inner{position:absolute;top:0;right:0;transform-origin:top right}
+.chq{position:relative;overflow:hidden;color:#0d1522;background:transparent}
+.chq .paper{position:absolute;inset:0;background-size:100% 100%;background-repeat:no-repeat}
+.chq .paper.blank{background-color:#fbfbf8;background-image:linear-gradient(90deg,rgba(30,90,120,.10) .2mm,transparent .2mm),linear-gradient(0deg,rgba(30,90,120,.10) .2mm,transparent .2mm);background-size:10mm 10mm}
+.chq.ed{border-radius:2mm;box-shadow:0 18px 40px -16px rgba(0,0,0,.55),0 0 0 1px rgba(0,0,0,.08)}
+.mk{position:absolute;white-space:nowrap;line-height:1}
+.mk-bank{position:absolute;text-align:center;font:800 7pt/1.5 var(--font-fa);white-space:nowrap;background:#fbf1f1;border-radius:1mm}
+.fld{position:absolute;display:flex;align-items:center;white-space:nowrap;line-height:1;color:#0d1522}
+.fld .tx{flex:0 0 auto}
+.fld .fill{flex:1 1 0;min-width:0;overflow:hidden;direction:rtl;text-align:right;letter-spacing:.4pt;opacity:.85;padding-inline-start:1.2mm}
+.fld.a-right{justify-content:flex-start}.fld.a-center{justify-content:center}.fld.a-left{justify-content:flex-end}
+.fld .cells{display:flex;width:100%;height:100%}
+.fld .cells span{flex:1;display:grid;place-items:center}
+.ed .fld{cursor:grab;border-radius:1mm;outline:.25mm dashed transparent;transition:outline-color .12s,background .12s}
+.ed .fld:hover{outline-color:rgba(10,114,144,.6);background:rgba(10,114,144,.06)}
+.ed .fld.sel{outline:.35mm solid #D8451F;background:rgba(216,69,31,.08);cursor:grabbing}
+.ed .fld.empty .tx{color:#8a948f;font-style:italic}
+.fld .tag{position:absolute;top:-4.6mm;right:0;font:700 7pt/1 var(--font-fa);background:#D8451F;color:#fff;padding:.7mm 1.6mm;border-radius:1mm;display:none;white-space:nowrap}
+.ed .fld.sel .tag{display:block}
+.fld .hdl{position:absolute;left:-1.4mm;top:50%;width:2.4mm;height:2.4mm;margin-top:-1.2mm;border-radius:50%;background:#D8451F;display:none;cursor:ew-resize}
+.ed .fld.sel .hdl{display:block}
+.chq.test{outline:.2mm dashed #888}
+.chq.test .fld{outline:.15mm solid #bbb}
+
+/* layout panel */
+.fld-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.fld-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 11px 4px 7px;font-size:12px;background:var(--paper-2);color:var(--ink-soft);cursor:pointer;transition:border-color .2s,color .2s}
+.fld-pill input{margin:0;accent-color:var(--brand-blue)}
+.fld-pill:hover{color:var(--ink)}
+.fld-pill[aria-current="true"]{border-color:var(--brand-orange);color:var(--brand-orange);font-weight:700}
+.fld-pill.extra{border-style:dashed}
+.insp{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:0 10px;align-items:end}
+
+/* queue in the sidebar */
+.q-empty{padding:10px 14px;font-size:12px;color:var(--ink-faint)}
+.history-item .q-amt{font-family:var(--font-mono);font-size:11px;color:var(--accent);direction:ltr}
+.history-item .q-dot{width:7px;height:7px;border-radius:50%;flex:none}
+.history-item .history-time{display:flex;align-items:center;gap:6px}
+
+/* templates view */
+.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.tpl-card{display:flex;flex-direction:column;gap:10px;padding:12px}
+.tpl-thumb{aspect-ratio:207.5/80;max-width:100%;border-radius:var(--radius-s);background:#fbfbf8 center/100% 100% no-repeat;border:1px solid var(--line);position:relative;overflow:hidden}
+.tpl-thumb .status-pill{position:absolute;top:6px;right:6px;background:var(--paper-1)}
+.tpl-meta{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.tpl-meta b{font-size:var(--text-md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.tpl-meta span{font-size:11px;color:var(--ink-faint);font-family:var(--font-mono);white-space:nowrap}
+.tpl-card .row .btn{flex:1 1 auto;white-space:nowrap}
+.tpl-card .row .btn.primary{flex-basis:100%}
+.bank-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.bank-btn{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--paper-2);border-radius:var(--radius-s);padding:8px 10px;font-size:12.5px;color:var(--ink);text-align:start;min-width:0}
+.bank-btn:hover{border-color:var(--line-strong);background:var(--paper-3)}
+.bank-btn span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bank-btn small{color:var(--brand-green);font-size:11px;white-space:nowrap}
+.bank-btn[aria-current="true"]{border-color:var(--brand-blue)}
+.dropzone{border:1.5px dashed var(--line-strong);border-radius:var(--radius-m);padding:14px;text-align:center;color:var(--ink-faint);font-size:12.5px;cursor:pointer;display:block;transition:border-color .2s,background .2s;line-height:1.8}
+.dropzone:hover,.dropzone.over{border-color:var(--brand-blue);background:color-mix(in srgb,var(--brand-blue) 6%,transparent)}
+.dropzone img{display:block;max-width:100%;max-height:120px;margin:0 auto 8px;border-radius:6px}
+.choice{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}
+.choice label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--ink-soft);cursor:pointer;line-height:1.7}
+.choice input{accent-color:var(--brand-blue);margin-top:5px}
+.kpi-grid.q{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:900px){.kpi-grid.q{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi-value.sm{font-size:20px}
+td .row{flex-wrap:nowrap}
+td.num{font-family:var(--font-mono);direction:ltr;text-align:end}
+tr.cur td{background:color-mix(in srgb,var(--brand-blue) 7%,transparent)}
+.tips{margin:0;padding-inline-start:18px;font-size:12.5px;color:var(--ink-soft);line-height:2}
+
+/* friendliness */
+.welcome{position:relative;padding:16px 18px}
+.welcome-x{position:absolute;top:10px;inset-inline-end:10px}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;counter-reset:st}
+@media (max-width:900px){.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.steps{grid-template-columns:1fr}}
+.steps li{counter-increment:st;display:flex;flex-direction:column;gap:4px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-m);background:var(--paper-2);font-size:12.5px;color:var(--ink-soft);line-height:1.8}
+.steps li b{color:var(--ink);font-size:13.5px;display:flex;align-items:center;gap:8px}
+.steps li b::before{content:counter(st,persian);width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--grad-brand);color:#fff;font-size:12px;flex:none}
+.req{display:flex;align-items:center;gap:10px;margin:-4px 0 14px;font-size:12px;color:var(--ink-faint)}
+.req .bar-track{flex:1;height:6px}
+.req.done{color:var(--brand-green)}
+.field.need>label::after{content:" ●";color:var(--brand-orange);font-size:9px;vertical-align:middle}
+.field{position:relative}
+.cal-pop{position:absolute;z-index:20;top:100%;inset-inline-start:0;margin-top:-4px;width:292px;max-width:100%;padding:12px;border:1px solid var(--line-strong);border-radius:var(--radius-m);background:var(--paper-1);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);backdrop-filter:blur(var(--glass-blur)) saturate(160%);box-shadow:var(--shadow);animation:modalRise .2s ease}
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-weight:700;font-size:13.5px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+.cal-grid .wd{font-size:11px;color:var(--ink-faint);padding:3px 0}
+.cal-grid button{border:1px solid transparent;background:transparent;border-radius:8px;padding:6px 0;font-size:12.5px;color:var(--ink)}
+.cal-grid button:hover{background:var(--paper-3)}
+.cal-grid button.fri{color:var(--danger)}
+.cal-grid button.today{border-color:var(--brand-blue)}
+.cal-grid button.sel{background:var(--grad-brand);color:#fff}
+.cal-grid button.past{opacity:.45}
+.cal-foot{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.ed.locked .fld{cursor:pointer}
+.ed.locked .fld:hover{outline:.25mm dashed rgba(10,114,144,.55);background:rgba(10,114,144,.07)}
+.ed.locked .fld.empty{opacity:.55}
+.flash{animation:flash 1.2s ease}
+@keyframes flash{0%,100%{box-shadow:none}30%{box-shadow:0 0 0 4px color-mix(in srgb,var(--brand-blue) 35%,transparent)}}
+.pm-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow:auto;margin-bottom:12px}
+.pm-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:4px 12px;align-items:center;padding:9px 12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--paper-2);font-size:12.5px}
+.pm-row b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pm-row .amt{font-family:var(--font-mono);color:var(--accent);direction:ltr}
+.pm-row small{grid-column:1/-1;color:var(--ink-faint)}
+.pm-row.bad{border-color:color-mix(in srgb,var(--danger) 40%,transparent)}
+.pm-row.bad small{color:var(--danger)}
+.pm-check{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:var(--radius-s);background:color-mix(in srgb,var(--brand-blue) 7%,transparent);border:1px solid color-mix(in srgb,var(--brand-blue) 22%,transparent);font-size:12.5px;line-height:1.8}
+.pm-check label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+.pm-check input{accent-color:var(--brand-blue);margin-top:5px}
+.pm-big{font-size:14px;line-height:2;color:var(--ink-soft);margin:0 0 10px}
+.modal-actions{flex-wrap:wrap}
+.undo-bar{position:fixed;z-index:61;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px;padding:7px;padding-inline-start:16px;border-radius:999px;border:1px solid var(--line-strong);background:var(--paper-1);
+  -webkit-backdrop-filter:blur(var(--glass-blur));backdrop-filter:blur(var(--glass-blur));box-shadow:var(--shadow);font-size:13px;animation:modalRise .25s ease;white-space:nowrap}
+.kbd-hint{font-size:11px;color:var(--ink-faint);display:flex;gap:4px;align-items:center}
+
+/* registry, payees, settings */
+.nav-badge{margin-inline-start:auto;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--brand-orange);color:#fff;font-size:11px;font-weight:700;display:inline-grid;place-items:center}
+.sync .dot{background:var(--ink-faint)}
+.sync.ok .dot{background:var(--brand-green)}
+.sync.busy .dot{background:var(--warn)}
+.sync.err{color:var(--danger)}.sync.err .dot{background:var(--danger)}
+@media (max-width:900px){.sync{display:none}}
+.due-strip{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-color:color-mix(in srgb,var(--brand-orange) 35%,transparent);background:color-mix(in srgb,var(--brand-orange) 8%,var(--paper-1))}
+.due-strip b{color:var(--ink)}
+.due-strip .grow{flex:1;min-width:200px;font-size:13px;color:var(--ink-soft);line-height:1.9}
+.opt-row{display:flex;gap:16px;flex-wrap:wrap;margin:-2px 0 13px}
+.filters{display:flex;flex-direction:column;gap:12px}
+.filter-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0 10px}
+@media (max-width:900px){.filter-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.filter-row .field{margin:0}
+td select.st{width:auto;padding:4px 8px;font-size:12px;border-radius:999px}
+td select.st.issued{color:var(--brand-blue)}td select.st.cleared{color:var(--brand-green)}td select.st.bounced{color:var(--danger)}td select.st.void{color:var(--ink-faint);text-decoration:line-through}
+tr.overdue td:first-child{color:var(--danger);font-weight:700}
+tr.soon td:first-child{color:var(--warn);font-weight:700}
+.ph code{font-family:var(--font-mono);font-size:11px;background:var(--paper-3);border-radius:5px;padding:1px 5px;margin-inline-end:4px;cursor:pointer;direction:ltr;display:inline-block}
+.fld .strike{position:absolute;left:0;right:0;top:50%;border-top:.45mm solid #0d1522;transform:translateY(-50%)}
+.fld.neg{background:#0d1522;color:#fff!important;border-radius:.6mm;padding-inline:1mm}
+.fld.neg .cells span{color:#fff}
+.fld svg.perf{width:100%;height:100%;overflow:visible}
+.rc-page{font-family:"Vazirmatn",Tahoma,sans-serif;color:#111;padding:14mm 14mm 12mm;box-sizing:border-box;display:flex;flex-direction:column;gap:5mm}
+.rc-page h1{margin:0;font-size:16pt;text-align:center}
+.rc-page .org{text-align:center;font-size:11pt;color:#444}
+.rc-page .meta{display:flex;justify-content:space-between;font-size:9.5pt;color:#555;border-bottom:.3mm solid #999;padding-bottom:2mm}
+.rc-page p{margin:0;font-size:11pt;line-height:2.1;text-align:justify}
+.rc-page table{width:100%;border-collapse:collapse;font-size:10pt}
+.rc-page th,.rc-page td{border:.25mm solid #888;padding:1.6mm 2.4mm;text-align:right;white-space:normal}
+.rc-page th{background:#f0f0f0;width:30%;font-weight:600}
+.rc-signs{display:grid;grid-template-columns:1fr 1fr;gap:10mm;margin-top:auto}
+.rc-signs div{border-top:.3mm dashed #777;padding-top:2mm;text-align:center;font-size:10pt;min-height:18mm}
+.rp-page{font-family:"Vazirmatn",Tahoma,sans-serif;color:#111;padding:10mm;box-sizing:border-box}
+.rp-page h1{font-size:14pt;margin:0 0 2mm}
+.rp-page .sub{font-size:9pt;color:#555;margin-bottom:4mm}
+.rp-page table{width:100%;border-collapse:collapse;font-size:8.5pt}
+.rp-page th,.rp-page td{border:.2mm solid #999;padding:1.2mm 2mm;text-align:right}
+.rp-page th{background:#eee}
+.rp-page tfoot td{font-weight:700;background:#f6f6f6}
+
+/* chequebooks, received, holidays, import */
+.book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.book{display:flex;flex-direction:column;gap:10px}
+.book-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.book-head b{font-size:var(--text-md)}
+.book-head .status-pill{white-space:nowrap;flex:none}
+.book-head .muted{font-size:12px}
+.leafs{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:4px}
+.leaf{border:1px solid var(--line);border-radius:6px;padding:3px 0;text-align:center;font-family:var(--font-mono);font-size:10.5px;background:var(--paper-2);color:var(--ink-soft);cursor:pointer}
+.leaf.used{background:color-mix(in srgb,var(--brand-green) 16%,transparent);color:var(--brand-green);border-color:transparent;cursor:default}
+.leaf.queued{background:color-mix(in srgb,var(--brand-blue) 16%,transparent);color:var(--brand-blue);border-color:transparent}
+.leaf.void{background:color-mix(in srgb,var(--danger) 12%,transparent);color:var(--danger);text-decoration:line-through;border-color:transparent}
+.leaf-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--ink-faint)}
+.leaf-legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-inline-end:4px;vertical-align:middle}
+.hol-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px}
+.hol{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:6px 10px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--paper-2)}
+.hol.off{opacity:.45;text-decoration:line-through}
+.hol .mono{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);white-space:nowrap}
+.hol span:nth-child(3){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hol small{color:var(--warn);font-size:10px}
+.cal-grid button.hol{color:var(--danger);font-weight:700}
+#imBody tr.bad td{color:var(--danger)}
+
+/* print: only the generated pages */
+#print-root{display:none}
+@media print{
+  html,body{height:auto!important;overflow:visible!important;background:#fff!important}
+  body>*:not(#print-root){display:none!important}
+  #print-root{display:block}
+  .pg{position:relative;overflow:hidden;break-after:page;page-break-after:always}
+  .pg:last-child{break-after:auto;page-break-after:auto}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+@media (prefers-reduced-motion:reduce){.ed .fld{transition:none}}
+</style>
+<style id="pageStyle">@page{size:207.5mm 80mm;margin:0}</style>
+</head>
+<body>
+<div class="ambient" aria-hidden="true"><span></span><span></span><span></span></div>
+
+<div class="corner-toggles" id="cornerToggles">
+  <button class="dial" id="btnTheme" type="button" title="تم روشن / تاریک">
+    <svg id="themeDialIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
+  </button>
+</div>
+
+<div class="app" id="app">
+  <div class="sidebar-scrim" id="sidebarScrim"></div>
+  <aside class="sidebar">
+    <div class="brand">
+      <img class="brand-mark" data-brand-logo src="assets/brand/logo.svg" alt="">
+      <div class="brand-text">
+        <div class="brand-name" data-brand-name>نژا چک</div>
+        <div class="brand-sub" data-brand-tagline>صدور و چاپ چک</div>
+      </div>
+      <button class="icon-btn sidebar-collapse" id="btnSidebarCollapse" type="button" aria-expanded="true" title="جمع کردن منو">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"></rect><path d="M9 4v16"></path></svg>
+      </button>
+    </div>
+
+    <div class="sidebar-actions">
+      <button class="btn nav-cta" id="navNew" type="button">
+        <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+        <span class="sidebar-menu-label">چک تازه</span>
+      </button>
+      <div class="nav-section-label" data-brand-name>نژا چک</div>
+      <button class="btn active" type="button" data-view="issue">
+        <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"></rect><path d="M6 10h7M6 14h4M16 14h2"></path></svg>
+        <span class="sidebar-menu-label">صدور چک</span>
+      </button>
+      <button class="btn" type="button" data-view="queue">
+        <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="7" rx="1"></rect></svg>
+        <span class="sidebar-menu-label">صف چاپ</span>
+      </button>
+      <button class="btn" type="button" data-view="templates">
+        <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"></rect><rect x="13" y="3" width="8" height="8" rx="2"></rect><rect x="3" y="13" width="8" height="8" rx="2"></rect><path d="M17 13v8M13 17h8"></path></svg>
+        <span class="sidebar-menu-label">قالب‌ها</span>
+      </button>
+      <button class="btn" type="button" data-view="books">
+        <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"></path><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20M8 7h8M8 11h5"></path></svg>
+        <span class="sidebar-menu-label">دسته‌چک‌ها</span>
+        <span class="nav-badge" id="bookBadge" hidden></span>
+      </button>
+      <button class="btn" type="button" data-view="received">
+        <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"></rect><path d="M12 3v7m0 0-3-3m3 3 3-3"></path></svg>
+        <span class="sidebar-menu-label">چک‌های دریافتی</span>
+        <span class="nav-badge" id="recvBadge" hidden></span>
+      </button>
+      <button class="btn" type="button" data-view="payees">
+        <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14a5.5 5.5 0 0 1 3 6"></path></svg>
+        <span class="sidebar-menu-label">طرف حساب‌ها</span>
+      </button>
+      <button class="btn" type="button" data-view="reports">
+        <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5M4 19h16M8 15v-4M12 15V8M16 15v-2"></path></svg>
+        <span class="sidebar-menu-label">چک‌های صادره</span>
+        <span class="nav-badge" id="dueBadge" hidden></span>
+      </button>
+      <button class="btn" type="button" data-view="settings">
+        <svg class="sidebar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"></path></svg>
+        <span class="sidebar-menu-label">تنظیمات</span>
+      </button>
+    </div>
+
+    <div class="sidebar-scroll">
+      <div class="history-title" id="sqTitle">صف چاپ</div>
+      <div id="sideQueue"></div>
+    </div>
+
+    <div class="sidebar-foot">
+      <a class="btn" href="/login" title="خروج از حساب">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 17l5-5-5-5"></path><path d="M15 12H3"></path><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"></path></svg>
+        <span class="sidebar-menu-label">خروج</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="icon-btn btn-hamburger" id="btnHamburger" type="button" title="منو">☰</button>
+      <div class="topbar-title">
+        <div class="t" id="pageTitle">صدور چک</div>
+        <div class="s" id="pageSub"></div>
+      </div>
+      <div class="tabs" role="group" aria-label="واحد ورود مبلغ">
+        <button class="tab" id="uT" type="button">تومان</button>
+        <button class="tab" id="uR" type="button">ریال</button>
+      </div>
+      <div class="topbar-tools" id="topbarTools">
+        <span class="status-pill sync" id="syncPill" title=""><span class="dot"></span><span id="syncTxt">محلی</span></span>
+        <button class="btn sm" id="btnReceipt" type="button" title="رسید پرداخت برای امضای گیرنده">رسید</button>
+        <button class="btn sm" id="btnTest" type="button" title="روی کاغذ سفید، با تصویر کم‌رنگ برگه برای تنظیم">چاپ آزمایشی</button>
+        <button class="btn primary sm" id="btnPrint" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="7" rx="1"></rect></svg>
+          چاپ این چک
+        </button>
+      </div>
+    </div>
+
+    <section class="view">
+      <div class="view-scroll">
+
+        <!-- ============ issue ============ -->
+        <div class="view-inner wide" data-pane="issue">
+          <div class="card due-strip" id="dueStrip" hidden></div>
+          <div class="card welcome" id="welcome" hidden>
+            <button class="icon-btn welcome-x" id="welcomeX" type="button" title="دیگر نشان نده" aria-label="بستن راهنما">✕</button>
+            <h3 class="section-title">چهار قدم تا یک چک تمیز</h3>
+            <ol class="steps">
+              <li><b>بانک و قالب</b><span>بانک را انتخاب کنید. اگر برگهٔ شما فرق دارد، از «+ قالب» قالب خودتان را بسازید.</span></li>
+              <li><b>مشخصات</b><span>مبلغ، تاریخ و گیرنده را بنویسید. مبلغ و تاریخ خودشان به حروف می‌شوند.</span></li>
+              <li><b>چاپ آزمایشی</b><span>یک بار روی کاغذ سفید بگیرید و جلوی نور روی برگه بگذارید. اگر جابه‌جا بود، «ویرایش چیدمان» را روشن کنید.</span></li>
+              <li><b>چاپ</b><span>برگه را در چاپگر بگذارید و «چاپ این چک» را بزنید.</span></li>
+            </ol>
+          </div>
+          <div class="issue">
+            <div class="stack">
+              <div class="card">
+                <div class="card-head"><h3 class="section-title">مشخصات چک</h3><button class="btn ghost" id="exBadge" type="button" hidden title="این برگه نمونه است؛ برای شروع پاکش کنید">نمونه است؛ پاک کن</button></div>
+                <div class="req" id="req" aria-live="polite"><div class="bar-track"><div class="bar" id="reqBar"></div></div><span id="reqTxt"></span></div>
+
+                <div class="field" id="bookField">
+                  <label for="fBook">دسته‌چک</label>
+                  <div class="in-row"><select id="fBook"></select><input class="num" id="fSerial" inputmode="numeric" placeholder="سریال برگ" aria-label="سریال برگ" style="max-width:118px"></div>
+                  <div class="field-hint" id="bookHint"></div>
+                </div>
+                <div class="field">
+                  <label for="fBank">بانک</label>
+                  <div class="in-row"><span class="bank-dot" id="bankDot"></span><select id="fBank"></select></div>
+                </div>
+                <div class="field">
+                  <label for="fTpl">قالب برگه</label>
+                  <div class="in-row">
+                    <select id="fTpl"></select>
+                    <button class="btn sm" type="button" data-modal-open="newTplModal" title="ساختن قالب از روی برگهٔ خودتان">+ قالب</button>
+                  </div>
+                  <div class="field-hint" id="tplHint"></div>
+                </div>
+
+                <div class="field need">
+                  <label for="fAmount">مبلغ <span id="unitLbl"></span></label>
+                  <div class="in-row">
+                    <input class="num big" id="fAmount" inputmode="numeric" autocomplete="off" placeholder="0">
+                    <button class="btn sm" id="btn000" type="button" title="سه صفر اضافه کن">۰۰۰+</button>
+                  </div>
+                  <div class="words" id="amtWords"></div>
+                  <div class="field-hint" id="amtHint"></div>
+                </div>
+
+                <div class="field">
+                  <label id="dateLbl">تاریخ سررسید</label>
+                  <div class="date3" role="group" aria-labelledby="dateLbl">
+                    <select id="fDay" aria-label="روز"></select>
+                    <select id="fMonth" aria-label="ماه"></select>
+                    <input class="num" id="fYear" inputmode="numeric" aria-label="سال">
+                  </div>
+                  <div class="row">
+                    <button class="btn sm" id="dCal" type="button" aria-expanded="false" aria-controls="calPop">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg>تقویم</button>
+                    <button class="btn sm" id="dToday" type="button">امروز</button>
+                    <button class="btn sm" id="dPrev" type="button">−۱ ماه</button>
+                    <button class="btn sm" id="dNext" type="button">+۱ ماه</button>
+                    <button class="btn sm" id="dWork" type="button" hidden>روز کاری بعد</button>
+                  </div>
+                  <div class="field-hint" id="dateHint"></div>
+                  <div class="cal-pop" id="calPop" hidden role="dialog" aria-label="انتخاب تاریخ"></div>
+                </div>
+
+                <div class="field need"><label for="fPayee">در وجه</label><div class="in-row"><input id="fPayee" autocomplete="off" list="payeeList" placeholder="نام گیرنده یا شرکت"><button class="btn sm" id="savePayee" type="button" title="ذخیره در طرف حساب‌ها" hidden>☆ ذخیره</button></div><datalist id="payeeList"></datalist><div class="field-hint" id="payeeHint"></div></div>
+                <div class="field">
+                  <label for="fPid">کد ملی / شناسهٔ ملی گیرنده</label>
+                  <input class="num" id="fPid" inputmode="numeric" maxlength="11" autocomplete="off" placeholder="۱۰ یا ۱۱ رقم">
+                  <div class="field-hint" id="pidHint"></div>
+                </div>
+                <div class="field"><label for="fReason">بابت</label><input id="fReason" autocomplete="off" placeholder="مثلاً خرید تجهیزات"></div>
+                <div class="opt-row">
+                  <label class="switch" title="«غیرقابل پشت‌نویسی» روی برگه چاپ می‌شود"><input type="checkbox" id="fNoEndorse"><span class="toggle-switch"></span> عدم پشت‌نویسی</label>
+                  <label class="switch" title="روی عبارت «یا به حواله‌کرد» خط کشیده می‌شود"><input type="checkbox" id="fNoHawale"><span class="toggle-switch"></span> حذف حواله‌کرد</label>
+                </div>
+                <div class="field"><label for="fNote">توضیحات روی برگه <span class="muted" style="font-weight:400">(اختیاری)</span></label><input id="fNote" autocomplete="off" placeholder="مثلاً «فقط به حساب گیرنده واریز شود»"></div>
+                <div class="field" style="margin-bottom:6px">
+                  <label for="fSayad">شناسهٔ صیاد <span class="muted" style="font-weight:400">(۱۶ رقم، برای ثبت)</span></label>
+                  <input class="num" id="fSayad" inputmode="numeric" maxlength="19" autocomplete="off">
+                </div>
+
+                <details class="sub-sec" id="stubBox">
+                  <summary>ته‌چک: مانده و واریزی</summary>
+                  <div>
+                    <div class="g2">
+                      <div class="field"><label for="fPrev">مانده قبلی <span class="u"></span></label><input class="num" id="fPrev" inputmode="numeric" autocomplete="off"></div>
+                      <div class="field"><label for="fDeposit">واریزی <span class="u"></span></label><input class="num" id="fDeposit" inputmode="numeric" autocomplete="off"></div>
+                    </div>
+                    <div class="field-hint" id="stubHint"></div>
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <div class="stack">
+              <div class="card">
+                <div class="card-head">
+                  <h3 class="section-title">پیش‌نمایش به اندازهٔ واقعی <span class="card-hint" id="sizeChip"></span></h3>
+                  <div class="row" style="gap:16px">
+                    <label class="switch" title="نوشته‌های ته‌چک (سمت چپ برگه) هم چاپ شوند؛ برای همین قالب ذخیره می‌شود"><input type="checkbox" id="stubMode"><span class="toggle-switch"></span> چاپ ته‌چک</label>
+                    <label class="switch"><input type="checkbox" id="editMode"><span class="toggle-switch"></span> ویرایش چیدمان</label>
+                  </div>
+                </div>
+                <div class="flags" id="flags" style="margin-bottom:10px"></div>
+                <div class="stage-wrap"><div class="stage" id="stage" tabindex="0" aria-label="پیش‌نمایش چک؛ نوشته‌ها را بکشید"><div class="stage-inner" id="stageInner"></div></div></div>
+                <p class="card-note" id="stageNote" style="margin:12px 0 0"></p>
+              </div>
+
+              <div class="card" id="layoutCard" hidden>
+                <div class="card-head"><h3 class="section-title">چیدمان <span class="muted" id="tplName" style="font-weight:400"></span></h3>
+                  <button class="btn ghost" id="addText" type="button">+ متن ثابت</button></div>
+                <div class="fld-list" id="fldList"></div>
+                <div class="insp" id="insp"></div>
+
+                <details class="sub-sec" open>
+                  <summary>برگه و چاپگر</summary>
+                  <div>
+                    <div class="g3">
+                      <div class="field"><label for="tW">پهنای برگه (mm)</label><input class="num" id="tW" type="number" step="0.5" min="40"></div>
+                      <div class="field"><label for="tH">ارتفاع برگه (mm)</label><input class="num" id="tH" type="number" step="0.5" min="20"></div>
+                      <div class="field"><label for="tFont">قلم</label>
+                        <select id="tFont">
+                          <option value="Vazirmatn">وزیرمتن</option>
+                          <option value="Noto Naskh Arabic">نسخ</option>
+                          <option value="B Nazanin">ب نازنین (اگر نصب است)</option>
+                          <option value="B Mitra">ب میترا (اگر نصب است)</option>
+                          <option value="IRANSans">ایران‌سنس (اگر نصب است)</option>
+                          <option value="Tahoma">تاهوما</option>
+                          <option value="Noto Nastaliq Urdu">نستعلیق</option>
+                          <option value="IranNastaliq">ایران نستعلیق (اگر نصب است)</option>
+                          <option value="Lalezar">لاله‌زار</option>
+                        </select></div>
+                      <div class="field"><label for="tPaper">کاغذ چاپگر</label>
+                        <select id="tPaper">
+                          <option value="cheque">هم‌اندازهٔ برگه</option>
+                          <option value="cheque-rot">هم‌اندازهٔ برگه، عمودی</option>
+                          <option value="a4">A4 (برگه روی کاغذ)</option>
+                        </select></div>
+                      <div class="field"><label for="tOffX">جابه‌جایی افقی (mm)</label><input class="num" id="tOffX" type="number" step="0.5" title="مثبت = به چپ"></div>
+                      <div class="field"><label for="tOffY">جابه‌جایی عمودی (mm)</label><input class="num" id="tOffY" type="number" step="0.5" title="مثبت = به پایین"></div>
+                    </div>
+                    <div class="g2" id="a4Box">
+                      <div class="field"><label for="tA4r">فاصلهٔ برگه از راست A4</label><input class="num" id="tA4r" type="number" step="0.5"></div>
+                      <div class="field"><label for="tA4t">فاصلهٔ برگه از بالای A4</label><input class="num" id="tA4t" type="number" step="0.5"></div>
+                    </div>
+                    <div class="row" style="gap:18px;margin-bottom:8px">
+                      <label class="switch"><input type="checkbox" id="tDigits"><span class="toggle-switch"></span> ارقام فارسی</label>
+                      <label class="switch"><input type="checkbox" id="tFill"><span class="toggle-switch"></span> ستاره در جای خالی</label>
+                      <label class="switch"><input type="checkbox" id="tHash"><span class="toggle-switch"></span> # پیش از مبلغ</label>
+                      <label class="switch"><input type="checkbox" id="tRial"><span class="toggle-switch"></span> واحد پس از حروف</label>
+                      <label class="in-row" style="gap:6px;font-size:12px;color:var(--ink-soft)">واحد روی برگه
+                        <select id="tMoney" style="width:auto;padding:5px 8px"><option value="rial">ریال (چک)</option><option value="toman">تومان (فیش، رسید)</option></select></label>
+                    </div>
+                    <p class="card-note">اندازهٔ برگه را با خط‌کش از لبه تا لبه (همراه ته‌چک) بخوانید؛ با عوض کردن آن همهٔ نوشته‌ها هم‌نسبت جابه‌جا می‌شوند. «جابه‌جایی» برای خطای خود چاپگر است.</p>
+                  </div>
+                </details>
+
+                <details class="sub-sec">
+                  <summary>تصویر برگه</summary>
+                  <div>
+                    <label class="dropzone" id="imgDrop" for="imgFile">تصویر یا اسکن صاف یک برگ چک سفید را این‌جا بیندازید یا کلیک کنید. فقط زیر پیش‌نمایش دیده می‌شود و هرگز روی چک چاپ نمی‌شود.</label>
+                    <input type="file" id="imgFile" accept="image/*" hidden>
+                    <div class="row" style="margin-top:10px">
+                      <div class="field" style="flex:1;margin:0"><label for="imgOp">پررنگی تصویر</label><input type="range" id="imgOp" min="10" max="100" value="100" style="padding:0"></div>
+                      <button class="btn sm danger" id="imgClear" type="button">برداشتن تصویر</button>
+                    </div>
+                  </div>
+                </details>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ queue ============ -->
+        <div class="view-inner" data-pane="queue" hidden>
+          <div class="page-head">
+            <div><h2>صف چاپ</h2><p>چک‌هایی که با هم چاپ می‌شوند؛ هر برگ با قالب خودش.</p></div>
+            <div class="row">
+              <label class="btn" for="xlFile" style="cursor:pointer" title="فایل اکسل یا CSV با ستون‌های در وجه، مبلغ، سررسید، …">ورود از اکسل</label>
+              <input type="file" id="xlFile" accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+              <button class="btn" id="qAdd" type="button">+ چک تازه</button>
+              <button class="btn primary" id="qPrint" type="button">چاپ همهٔ صف</button>
+            </div>
+          </div>
+          <div class="kpi-grid q">
+            <div class="kpi"><div class="kpi-label">برگ در صف</div><div class="kpi-row"><div class="kpi-value" id="kCount"></div></div><div class="kpi-sub" id="kBad"></div></div>
+            <div class="kpi" style="--kpi-tone:var(--accent)"><div class="kpi-label">جمع مبلغ (ریال)</div><div class="kpi-row"><div class="kpi-value sm" id="kSum"></div></div><div class="kpi-sub" id="kSumT"></div></div>
+            <div class="kpi" style="--kpi-tone:var(--brand-green)"><div class="kpi-label">نزدیک‌ترین سررسید</div><div class="kpi-row"><div class="kpi-value sm" id="kNext"></div></div><div class="kpi-sub" id="kNextS"></div></div>
+            <div class="kpi" style="--kpi-tone:var(--brand-orange)"><div class="kpi-label">آخرین سررسید</div><div class="kpi-row"><div class="kpi-value sm" id="kLast"></div></div><div class="kpi-sub" id="kLastS"></div></div>
+          </div>
+          <div class="card">
+            <div class="table-wrap quiet"><table>
+              <thead><tr><th>#</th><th>در وجه</th><th>بانک / قالب</th><th>سررسید</th><th>مبلغ (ریال)</th><th>وضعیت</th><th></th></tr></thead>
+              <tbody id="qBody"></tbody>
+            </table></div>
+          </div>
+          <div class="grid grid-2">
+            <div class="card">
+              <div class="card-head"><h3 class="section-title">ساخت سری اقساطی از چک فعلی</h3></div>
+              <div class="g3">
+                <div class="field"><label for="sCount">تعداد</label><input class="num" id="sCount" value="6" inputmode="numeric"></div>
+                <div class="field"><label for="sEvery">هر چند ماه</label><input class="num" id="sEvery" value="1" inputmode="numeric"></div>
+                <div class="field"><label for="sTotal">مبلغ</label><select id="sTotal"><option value="same">هر برگ همین مبلغ</option><option value="split">این مبلغ کل است</option></select></div>
+              </div>
+              <label class="switch" style="margin-bottom:8px"><input type="checkbox" id="sLabel" checked><span class="toggle-switch"></span> «قسط یکم از شش» به «بابت» اضافه شود</label>
+              <label class="switch" style="margin-bottom:12px"><input type="checkbox" id="sWork" checked><span class="toggle-switch"></span> اگر سررسید جمعه یا تعطیل بود، روز کاری بعد</label>
+              <div class="field-hint" id="sHint"></div>
+              <div class="card-actions"><button class="btn primary" id="sGo" type="button">ساخت سری</button></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h3 class="section-title">پیش از چاپ</h3></div>
+              <ol class="tips">
+                <li>در پنجرهٔ چاپ: <b>Margins = None</b> و <b>Scale = 100%</b>.</li>
+                <li>اندازهٔ کاغذ را همان اندازهٔ برگه بگذارید، یا در حالت A4 برگه را با چسب کاغذی روی A4 بچسبانید.</li>
+                <li>برای هر قالب یک بار «چاپ آزمایشی» بگیرید و جلوی نور روی برگه بگذارید.</li>
+                <li>بعد از چاپ، چک را در سامانهٔ صیاد ثبت کنید.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ templates ============ -->
+        <div class="view-inner" data-pane="templates" hidden>
+          <div class="page-head">
+            <div><h2>قالب‌ها</h2><p>قالب برگه‌های خودتان را بسازید، یا چیدمان استاندارد هر بانک را تنظیم کنید.</p></div>
+            <div class="row">
+              <label class="btn" for="tplImport" style="cursor:pointer">بارگذاری از فایل</label>
+              <input type="file" id="tplImport" accept=".json,application/json" hidden>
+              <button class="btn primary" type="button" data-modal-open="newTplModal">+ قالب تازه</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3 class="section-title">قالب‌های من</h3><span class="card-hint" id="myCount"></span></div>
+            <div class="tpl-grid" id="myTpls"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3 class="section-title">چیدمان استاندارد بانک‌ها</h3><span class="card-hint" id="bankCount"></span></div>
+            <p class="card-note">چک‌های صیادیِ طرح یکسان در همهٔ بانک‌ها یک چیدمان دارند. هر بانک جداگانه تنظیم می‌شود. کافی است یکی را دقیق کنید و روی همه بگذارید.</p>
+            <div class="bank-grid" id="bankGrid"></div>
+            <div class="card-actions">
+              <button class="btn" type="button" id="tplAll">چیدمان قالب فعال روی همهٔ بانک‌ها</button>
+              <button class="btn ghost" type="button" id="tplReset">بازگشت قالب فعال به استاندارد</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ chequebooks ============ -->
+        <div class="view-inner" data-pane="books" hidden>
+          <div class="page-head">
+            <div><h2>دسته‌چک‌ها</h2><p>هر دسته‌چک را یک بار تعریف کنید؛ بعد سریال برگ بعدی خودش پر می‌شود و می‌بینید چند برگ مانده.</p></div>
+            <button class="btn primary" id="bkAdd" type="button">+ دسته‌چک</button>
+          </div>
+          <div class="book-grid" id="bookGrid"></div>
+        </div>
+
+        <!-- ============ received ============ -->
+        <div class="view-inner wide" data-pane="received" hidden>
+          <div class="page-head">
+            <div><h2>چک‌های دریافتی</h2><p>چک‌هایی که از مشتری‌ها می‌گیرید؛ تا خوابانده و وصول شوند دنبالشان می‌کنیم و سررسیدشان یادآوری می‌شود.</p></div>
+            <div class="row">
+              <button class="btn" id="rvCsv" type="button">خروجی اکسل (CSV)</button>
+              <button class="btn primary" id="rvAdd" type="button">+ چک دریافتی</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="filters">
+              <div class="tabs" id="rvPreset">
+                <button class="tab active" type="button" data-p="all">همه</button>
+                <button class="tab" type="button" data-p="open">وصول‌نشده</button>
+                <button class="tab" type="button" data-p="due">نزدیک سررسید</button>
+                <button class="tab" type="button" data-p="overdue">سررسید گذشته</button>
+                <button class="tab" type="button" data-p="bounced">برگشتی</button>
+              </div>
+              <div class="search-input-shell" style="max-width:320px"><span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg></span><input type="search" id="rvQ" placeholder="صادرکننده، کد ملی، صیاد، بابت"></div>
+            </div>
+          </div>
+          <div class="kpi-grid q">
+            <div class="kpi"><div class="kpi-label">در دست (ریال)</div><div class="kpi-row"><div class="kpi-value sm" id="rvHand"></div></div><div class="kpi-sub" id="rvHandS"></div></div>
+            <div class="kpi" style="--kpi-tone:var(--accent)"><div class="kpi-label">خوابانده‌شده، در انتظار وصول</div><div class="kpi-row"><div class="kpi-value sm" id="rvDep"></div></div><div class="kpi-sub" id="rvDepS"></div></div>
+            <div class="kpi" style="--kpi-tone:var(--brand-orange)"><div class="kpi-label">سررسید نزدیک یا گذشته</div><div class="kpi-row"><div class="kpi-value sm" id="rvDue"></div></div><div class="kpi-sub" id="rvDueS"></div></div>
+            <div class="kpi" style="--kpi-tone:var(--danger)"><div class="kpi-label">برگشتی</div><div class="kpi-row"><div class="kpi-value sm" id="rvBounced"></div></div><div class="kpi-sub" id="rvBouncedS"></div></div>
+          </div>
+          <div class="card">
+            <div class="table-wrap quiet"><table>
+              <thead><tr><th>سررسید</th><th>صادرکننده</th><th>بانک</th><th>مبلغ (ریال)</th><th>بابت</th><th>وضعیت</th><th>دریافت</th><th></th></tr></thead>
+              <tbody id="rvBody"></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- ============ payees ============ -->
+        <div class="view-inner" data-pane="payees" hidden>
+          <div class="page-head">
+            <div><h2>طرف حساب‌ها</h2><p>گیرنده‌هایی که زیاد برایشان چک می‌کشید؛ در فرم با چند حرف پیدا می‌شوند و بقیهٔ خانه‌ها خودشان پر می‌شوند.</p></div>
+            <div class="row">
+              <div class="search-input-shell" style="width:220px"><span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg></span><input type="search" id="pSearch" placeholder="جستجوی نام یا کد ملی"></div>
+              <button class="btn primary" id="pAdd" type="button">+ طرف حساب</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="table-wrap quiet"><table>
+              <thead><tr><th>نام</th><th>کد / شناسهٔ ملی</th><th>تلفن</th><th>بابت پیش‌فرض</th><th>چک‌ها</th><th></th></tr></thead>
+              <tbody id="pBody"></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- ============ reports ============ -->
+        <div class="view-inner wide" data-pane="reports" hidden>
+          <div class="page-head">
+            <div><h2>چک‌های صادره</h2><p id="rSub">هر چاپ تأییدشده این‌جا ثبت می‌شود. وضعیت هر چک را عوض کنید تا یادآوری‌ها درست بمانند.</p></div>
+            <div class="row">
+              <button class="btn" id="rPrint" type="button">چاپ گزارش</button>
+              <button class="btn" id="rCsv" type="button">خروجی اکسل (CSV)</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="filters">
+              <div class="tabs" id="rPreset">
+                <button class="tab active" type="button" data-p="all">همه</button>
+                <button class="tab" type="button" data-p="due">نزدیک سررسید</button>
+                <button class="tab" type="button" data-p="overdue">سررسید گذشته</button>
+                <button class="tab" type="button" data-p="month">این ماه</button>
+                <button class="tab" type="button" data-p="next">ماه بعد</button>
+              </div>
+              <div class="filter-row">
+                <div class="field"><label for="rFrom">سررسید از</label><input class="num" id="rFrom" placeholder="۱۴۰۵/۰۱/۰۱"></div>
+                <div class="field"><label for="rTo">تا</label><input class="num" id="rTo" placeholder="۱۴۰۵/۱۲/۲۹"></div>
+                <div class="field"><label for="rQ">جستجو</label><input id="rQ" placeholder="گیرنده، کد ملی، صیاد، بابت"></div>
+                <div class="field"><label for="rBank">بانک</label><select id="rBank"></select></div>
+                <div class="field"><label for="rStatus">وضعیت</label><select id="rStatus"><option value="">همه</option><option value="issued">صادرشده</option><option value="cleared">وصول‌شده</option><option value="bounced">برگشتی</option><option value="void">باطل</option></select></div>
+              </div>
+            </div>
+          </div>
+          <div class="kpi-grid q">
+            <div class="kpi"><div class="kpi-label">تعداد</div><div class="kpi-row"><div class="kpi-value" id="rCount"></div></div><div class="kpi-sub" id="rCountS"></div></div>
+            <div class="kpi" style="--kpi-tone:var(--accent)"><div class="kpi-label">جمع مبلغ (ریال)</div><div class="kpi-row"><div class="kpi-value sm" id="rSum"></div></div><div class="kpi-sub" id="rSumS"></div></div>
+            <div class="kpi" style="--kpi-tone:var(--brand-orange)"><div class="kpi-label">در انتظار وصول (ریال)</div><div class="kpi-row"><div class="kpi-value sm" id="rOpen"></div></div><div class="kpi-sub" id="rOpenS"></div></div>
+            <div class="kpi" style="--kpi-tone:var(--danger)"><div class="kpi-label">برگشتی</div><div class="kpi-row"><div class="kpi-value sm" id="rBounced"></div></div><div class="kpi-sub" id="rBouncedS"></div></div>
+          </div>
+          <div class="card">
+            <div class="table-wrap quiet"><table>
+              <thead><tr><th>سررسید</th><th>در وجه</th><th>بانک</th><th>مبلغ (ریال)</th><th>بابت</th><th>وضعیت</th><th>چاپ</th><th></th></tr></thead>
+              <tbody id="rBody"></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- ============ settings ============ -->
+        <div class="view-inner" data-pane="settings" hidden>
+          <div class="page-head"><div><h2>تنظیمات</h2><p id="setMode"></p></div></div>
+
+          <div class="card">
+            <div class="card-head"><h3 class="section-title">رسید پرداخت</h3><button class="btn sm" id="rcPreview" type="button">چاپ نمونه</button></div>
+            <div class="g2">
+              <div class="field"><label for="rcTitle">عنوان</label><input id="rcTitle"></div>
+              <div class="field"><label for="rcOrg">نام سازمان / شرکت</label><input id="rcOrg" placeholder="مثلاً شرکت نمونه"></div>
+            </div>
+            <div class="field"><label for="rcBody">متن رسید</label><textarea id="rcBody" rows="4"></textarea>
+              <div class="field-hint">این برچسب‌ها با مشخصات چک پر می‌شوند: <span class="ph" id="rcTags"></span></div></div>
+            <div class="g3">
+              <div class="field"><label for="rcSignA">امضای اول</label><input id="rcSignA"></div>
+              <div class="field"><label for="rcSignB">امضای دوم</label><input id="rcSignB"></div>
+              <div class="field"><label for="rcPaper">کاغذ</label><select id="rcPaper"><option value="A5">A5</option><option value="A4">A4</option></select></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3 class="section-title">یادآوری سررسید</h3></div>
+            <div class="g3">
+              <div class="field"><label for="remDays">چند روز پیش از سررسید یادآوری شود</label><input class="num" id="remDays" type="number" min="0" max="60"></div>
+            </div>
+            <label class="switch" style="margin-bottom:12px"><input type="checkbox" id="autoPayee"><span class="toggle-switch"></span> گیرنده‌های تازه پس از چاپ خودکار در «طرف حساب‌ها» ذخیره شوند</label>
+            <div id="baleBox" hidden>
+              <div class="sub-sec">
+                <p class="card-note">هر روز فهرست چک‌های نزدیک سررسید و سررسیدگذشته به گفتگوهای انتخابی در پیام‌رسان «بله» فرستاده می‌شود. یک ربات در بله بسازید (BotFather)، توکنش را این‌جا بگذارید، به ربات یا گروهش پیام بدهید و «پیدا کردن گفتگوها» را بزنید.</p>
+                <label class="switch" style="margin-bottom:12px"><input type="checkbox" id="bEnabled"><span class="toggle-switch"></span> ارسال روزانه در بله</label>
+                <div class="g3">
+                  <div class="field"><label for="bToken">توکن ربات</label><input class="num" id="bToken" autocomplete="off" placeholder="بدون تغییر"></div>
+                  <div class="field"><label for="bHour">ساعت ارسال</label><input class="num" id="bHour" type="number" min="0" max="23"></div>
+                  <div class="field"><label for="bChats">شناسهٔ گفتگوها</label><input class="num" id="bChats" placeholder="با ویرگول جدا کنید"></div>
+                </div>
+                <div class="row" id="bFound"></div>
+                <div class="card-actions">
+                  <button class="btn primary" id="bSave" type="button">ذخیره</button>
+                  <button class="btn" id="bDiscover" type="button">پیدا کردن گفتگوها</button>
+                  <button class="btn" id="bTest" type="button">فرستادن آزمایشی</button>
+                  <span class="field-hint" id="bState" style="align-self:center"></span>
+                </div>
+              </div>
+              <div class="sub-sec">
+                <p class="card-note">پیامک: همان یادآوری روزانه، کوتاه‌شده، به شماره‌های همراه انتخابی. کلید و شمارهٔ خط را از پنل سامانهٔ پیامک خود بردارید.</p>
+                <label class="switch" style="margin-bottom:12px"><input type="checkbox" id="sEnabled"><span class="toggle-switch"></span> ارسال روزانه با پیامک</label>
+                <div class="g2">
+                  <div class="field"><label for="sProvider">سامانهٔ پیامک</label><select id="sProvider"></select></div>
+                  <div class="field"><label for="sKey">کلید API</label><input class="num" id="sKey" autocomplete="off" placeholder="بدون تغییر"></div>
+                  <div class="field"><label for="sSender">شمارهٔ خط فرستنده</label><input class="num" id="sSender" inputmode="numeric"></div>
+                  <div class="field"><label for="sNumbers">شماره‌های گیرنده</label><input class="num" id="sNumbers" placeholder="09121234567, 0935…"></div>
+                </div>
+                <div class="card-actions">
+                  <button class="btn primary" id="smsSave" type="button">ذخیره</button>
+                  <button class="btn" id="smsTest" type="button">فرستادن پیامک آزمایشی</button>
+                </div>
+              </div>
+            </div>
+            <p class="card-note" id="baleLocal" hidden></p>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3 class="section-title">تعطیلات رسمی</h3>
+              <div class="tabs" id="holYear"></div></div>
+            <p class="card-note">جمعه‌ها و تعطیلات رسمی در تقویم قرمزند و اگر سررسید چکی روی آن‌ها بیفتد هشدار می‌گیرید. تعطیلات قمری با تقویم ام‌القری حساب شده و ممکن است یک روز با اعلام رسمی فرق کند؛ اگر فرق داشت، آن روز را خاموش کنید و تاریخ درست را اضافه کنید.</p>
+            <div class="hol-list" id="holList"></div>
+            <div class="row" style="margin-top:12px">
+              <input class="num" id="holDate" placeholder="۱۴۰۵/۰۷/۲۳" style="max-width:140px" aria-label="تاریخ تعطیل">
+              <input id="holTitle" placeholder="مناسبت" style="max-width:240px" aria-label="مناسبت">
+              <button class="btn" id="holAdd" type="button">+ افزودن تعطیل</button>
+            </div>
+          </div>
+
+          <div class="card" id="membersCard" hidden>
+            <div class="card-head"><h3 class="section-title">کاربران</h3><span class="card-hint">مدیران سامانه همیشه مدیر هستند</span></div>
+            <p class="card-note">«کاربر» چک می‌نویسد، چاپ می‌کند و وضعیت چک‌ها را عوض می‌کند. «مدیر» افزون بر این، کاربران، یادآوری بله، پشتیبان و بازگردانی را هم در اختیار دارد.</p>
+            <div class="table-wrap quiet"><table>
+              <thead><tr><th>نام</th><th>نام کاربری</th><th>دسترسی</th></tr></thead>
+              <tbody id="mBody"></tbody>
+            </table></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h3 class="section-title">پشتیبان‌گیری</h3></div>
+            <p class="card-note" id="bkNote"></p>
+            <div class="card-actions">
+              <button class="btn primary" id="bkSave" type="button">گرفتن فایل پشتیبان</button>
+              <label class="btn" for="bkFile" style="cursor:pointer">بازگردانی از فایل</label>
+              <button class="btn" id="bkMove" type="button" hidden>انتقال داده‌های این مرورگر به سرور</button>
+              <input type="file" id="bkFile" accept=".json,application/json" hidden>
+            </div>
+          </div>
+          <div class="card about" data-brand-about>
+            <div class="card-head"><h3 class="section-title">درباره</h3><span class="card-hint">نسخهٔ <span data-about-version></span></span></div>
+            <div class="about-body">
+              <img data-brand-logo src="assets/brand/logo.svg" alt="">
+              <dl>
+                <dt>برنامه</dt><dd><b data-about-name></b><br><span class="muted" data-about-tagline></span></dd>
+                <dt>سازنده</dt><dd data-about-author></dd>
+                <dt>ایمیل</dt><dd><a class="ltr" data-about-email></a></dd>
+                <dt>لینکدین</dt><dd><a class="ltr" data-about-linkedin target="_blank" rel="noopener"></a></dd>
+                <dt>مجوز</dt><dd>متن‌باز، MIT؛ استفاده و تغییر آزاد با ذکر نام سازنده</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- new template -->
+<div class="modal-backdrop" id="newTplModal">
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="ntTitle">
+    <h3 id="ntTitle">قالب تازه از روی برگهٔ خودتان</h3>
+    <div class="g2">
+      <div class="field"><label for="ntName">نام قالب</label><input id="ntName" placeholder="مثلاً «ملت — دسته‌چک شرکت»" autocomplete="off"></div>
+      <div class="field"><label for="ntBank">بانک (اختیاری)</label><select id="ntBank"></select></div>
+      <div class="field"><label for="ntW">پهنای برگه (mm)</label><input class="num" id="ntW" type="number" step="0.5" value="207.5"></div>
+      <div class="field"><label for="ntH">ارتفاع برگه (mm)</label><input class="num" id="ntH" type="number" step="0.5" value="80"></div>
+    </div>
+    <div class="field">
+      <label for="ntImg">تصویر برگه (اختیاری ولی بسیار کمک می‌کند)</label>
+      <label class="dropzone" id="ntDrop" for="ntImg">عکس صاف یا اسکن یک برگ سفید را این‌جا بیندازید یا کلیک کنید</label>
+      <input type="file" id="ntImg" accept="image/*" hidden>
+      <div class="field-hint">اگر تصویر بدهید، پهنا از نسبت تصویر و ارتفاع حساب می‌شود؛ بعداً با خط‌کش دقیقش کنید.</div>
+    </div>
+    <div class="choice" role="radiogroup" aria-label="چیدمان آغازین">
+      <label><input type="radio" name="ntStart" value="std" checked> از چیدمان استاندارد صیاد شروع کن و بعد جابه‌جا کن</label>
+      <label><input type="radio" name="ntStart" value="cur"> از چیدمان قالب فعلی رونوشت بگیر</label>
+      <label><input type="radio" name="ntStart" value="blank"> همهٔ نوشته‌ها خاموش؛ خودم یکی‌یکی روشن و جابه‌جا می‌کنم</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn primary" id="ntGo" type="button">ساختن و رفتن به چیدمان</button>
+      <button class="btn" type="button" data-modal-close>انصراف</button>
+    </div>
+  </div>
+</div>
+
+<!-- chequebook -->
+<div class="modal-backdrop" id="bookModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="bkTitle">
+    <h3 id="bkTitle">دسته‌چک</h3>
+    <div class="field"><label for="bkName">نام دسته‌چک</label><input id="bkName" placeholder="مثلاً «جاری شرکت — ملت»"></div>
+    <div class="g2">
+      <div class="field"><label for="bkBank">بانک</label><select id="bkBank"></select></div>
+      <div class="field"><label for="bkAcc">شمارهٔ حساب</label><input class="num" id="bkAcc"></div>
+      <div class="field"><label for="bkSeries">سری <span class="muted" style="font-weight:400">(بخش قبل از / روی برگه)</span></label><input class="num" id="bkSeries" placeholder="۳۳۸۶"></div>
+      <div class="field"><label for="bkFrom">سریال اولین برگ</label><input class="num" id="bkFrom" inputmode="numeric" placeholder="۱۲۳۴۵۶"></div>
+      <div class="field"><label for="bkCount">تعداد برگ</label><select id="bkCount"><option>10</option><option>20</option><option selected>25</option><option>50</option><option>100</option></select></div>
+      <div class="field"><label for="bkTpl">قالب برگه</label><select id="bkTpl"></select></div>
+    </div>
+    <div class="field-hint" id="bkRange"></div>
+    <div class="modal-actions">
+      <button class="btn primary" id="bkSaveBtn" type="button">ذخیره</button>
+      <button class="btn" type="button" data-modal-close>انصراف</button>
+    </div>
+  </div>
+</div>
+
+<!-- received cheque -->
+<div class="modal-backdrop" id="recvModal">
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="rvTitle">
+    <h3 id="rvTitle">چک دریافتی</h3>
+    <div class="g2">
+      <div class="field need"><label for="rvDrawer">صادرکننده (از طرف)</label><input id="rvDrawer" list="payeeList" autocomplete="off"></div>
+      <div class="field"><label for="rvId">کد / شناسهٔ ملی صادرکننده</label><input class="num" id="rvId" inputmode="numeric" maxlength="11"><div class="field-hint" id="rvIdHint"></div></div>
+      <div class="field need"><label for="rvAmount">مبلغ <span class="u"></span></label><input class="num big" id="rvAmount" inputmode="numeric"><div class="field-hint" id="rvAmountW"></div></div>
+      <div class="field need"><label for="rvDue">سررسید</label><input class="num" id="rvDue" placeholder="۱۴۰۵/۰۸/۱۹"><div class="field-hint" id="rvDueHint"></div></div>
+      <div class="field"><label for="rvBank">بانک</label><input id="rvBank" list="bankList" autocomplete="off"><datalist id="bankList"></datalist></div>
+      <div class="field"><label for="rvBranch">شعبه</label><input id="rvBranch"></div>
+      <div class="field"><label for="rvSayad">شناسهٔ صیاد</label><input class="num" id="rvSayad" inputmode="numeric" maxlength="19"></div>
+      <div class="field"><label for="rvSerial">سری / سریال</label><input class="num" id="rvSerial"></div>
+      <div class="field"><label for="rvGot">تاریخ دریافت</label><input class="num" id="rvGot"></div>
+      <div class="field"><label for="rvStatus">وضعیت</label><select id="rvStatus"></select></div>
+    </div>
+    <div class="field"><label for="rvReason">بابت</label><input id="rvReason"></div>
+    <div class="field"><label for="rvNote">یادداشت</label><input id="rvNote"></div>
+    <div class="modal-actions">
+      <button class="btn primary" id="rvSave" type="button">ذخیره</button>
+      <button class="btn" type="button" data-modal-close>انصراف</button>
+    </div>
+  </div>
+</div>
+
+<!-- Excel import -->
+<div class="modal-backdrop" id="importModal">
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="imTitle">
+    <h3 id="imTitle">ورود چک‌ها از فایل</h3>
+    <p class="muted" id="imInfo" style="margin:0 0 10px;line-height:1.9"></p>
+    <div class="table-wrap" style="max-height:340px"><table>
+      <thead><tr><th>#</th><th>در وجه</th><th>مبلغ (ریال)</th><th>سررسید</th><th>بابت</th><th>بانک</th><th>وضعیت</th></tr></thead>
+      <tbody id="imBody"></tbody>
+    </table></div>
+    <div class="modal-actions">
+      <button class="btn primary" id="imGo" type="button"></button>
+      <button class="btn" id="imSample" type="button">دانلود فایل نمونه</button>
+      <button class="btn" type="button" data-modal-close>انصراف</button>
+    </div>
+  </div>
+</div>
+
+<!-- payee -->
+<div class="modal-backdrop" id="payeeModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pyTitle">
+    <h3 id="pyTitle">طرف حساب</h3>
+    <div class="field"><label for="pyName">نام</label><input id="pyName" autocomplete="off"></div>
+    <div class="g2">
+      <div class="field"><label for="pyId">کد / شناسهٔ ملی</label><input class="num" id="pyId" inputmode="numeric" maxlength="11"><div class="field-hint" id="pyIdHint"></div></div>
+      <div class="field"><label for="pyPhone">تلفن</label><input class="num" id="pyPhone" inputmode="tel"></div>
+    </div>
+    <div class="field"><label for="pyReason">بابت پیش‌فرض</label><input id="pyReason"></div>
+    <div class="field"><label for="pyNote">یادداشت</label><input id="pyNote"></div>
+    <div class="modal-actions">
+      <button class="btn primary" id="pySave" type="button">ذخیره</button>
+      <button class="btn" type="button" data-modal-close>انصراف</button>
+    </div>
+  </div>
+</div>
+
+<!-- confirmations -->
+<div class="modal-backdrop" id="confirmModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="cfTitle">
+    <h3 id="cfTitle"></h3>
+    <p class="muted" id="cfText" style="margin:0 0 6px;line-height:1.9"></p>
+    <div class="modal-actions">
+      <button class="btn danger" id="cfYes" type="button"></button>
+      <button class="btn" type="button" data-modal-close>انصراف</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="printModal">
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
+    <h3 id="pmTitle"></h3>
+    <div id="pmBody"></div>
+    <div class="modal-actions" id="pmActions"></div>
+  </div>
+</div>
+<div class="undo-bar" id="undoBar" hidden role="status"><span id="undoTxt"></span><button class="btn sm" id="undoBtn" type="button">بازگردانی</button></div>
+<div class="toast" id="toast" role="status"></div>
+<div id="print-root"></div>
+<script src="assets/cheque/cheque.js"></script>
+</body>
+</html>

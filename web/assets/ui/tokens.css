@@ -1,0 +1,94 @@
+/* UI kit -- design tokens. Load first; everything else reads these.
+   Light is the default (:root); dark is html[data-theme="dark"], set by
+   ui.js (persisted as <prefix>.theme) or by hand.
+
+   Override per product by redeclaring a token *after* this file, e.g.
+     :root{--brand-blue:#1F5FA8}  html[data-theme="dark"]{--brand-blue:#6FB4FF} */
+
+  :root{
+    color-scheme:light;
+    /* brand */
+    --brand-orange:#D8451F;
+    --brand-blue:#0A7290;
+    --brand-green:#06795F;
+    --accent:#9A6A12;
+    --grad-brand:linear-gradient(150deg,#0E86A8 0%,#0A7290 55%,#0B6480 100%);
+    /* ink (text) */
+    --ink:#0B0E14;
+    --ink-soft:#454C59;
+    --ink-faint:#616B7A;
+    /* paper (surfaces) -- 1..3 are translucent for the glass panels */
+    --paper:#F4F6F9;
+    --paper-1:rgba(255,255,255,.74);
+    --paper-2:rgba(243,245,249,.82);
+    --paper-3:#E7EBF1;
+    /* hairlines */
+    --line:rgba(11,14,20,.09);
+    --line-strong:rgba(11,14,20,.16);
+    /* semantic */
+    --danger:#C0391A;
+    --warn:#9A6A12;
+    /* glass + light */
+    --glass-blur:22px;
+    --glass-veil:rgba(255,255,255,.55);
+    --halo:rgba(10,114,144,.24);
+    --amb-strength:16%;
+    /* elevation */
+    --shadow:0 24px 60px rgba(11,14,20,.14);
+    --shadow-1:0 2px 10px rgba(11,14,20,.05);
+    --shadow-2:0 14px 34px rgba(11,14,20,.10);
+    --panel-shadow:0 8px 32px rgba(11,14,20,.10),inset 0 1px 0 rgba(255,255,255,.6);
+    /* radii */
+    --radius-xs:6px;
+    --radius-s:8px;
+    --radius-m:12px;
+    --radius-l:18px;
+    --radius-xl:28px;
+    --radius-pill:999px;
+    /* type */
+    --font-fa:'Vazirmatn',system-ui,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,monospace;
+    --font-en:'Manrope',var(--font-fa);
+    --text-3xs:9px;
+    --text-2xs:10px;
+    --text-xs:11px;
+    --text-sm:12px;
+    --text-base:13px;
+    --text-md:14px;
+    --text-lg:16px;
+    --text-xl:18px;
+    --text-2xl:20px;
+    --text-3xl:24px;
+    --text-4xl:28px;
+  }
+  html[data-theme="dark"]{
+    color-scheme:dark;
+    --brand-orange:#FF7A4D;
+    --brand-blue:#4FCFE8;
+    --brand-green:#3FD8A4;
+    --accent:#F2B441;
+    --grad-brand:linear-gradient(150deg,#2FA8C4 0%,#2490B4 55%,#1F7CA4 100%);
+    --ink:#F3F6FB;
+    --ink-soft:#AEB8C7;
+    --ink-faint:#7A8496;
+    --paper:#05070C;
+    --paper-1:rgba(23,27,36,.62);
+    --paper-2:rgba(40,46,58,.58);
+    --paper-3:rgba(56,63,78,.52);
+    --line:rgba(255,255,255,.07);
+    --line-strong:rgba(255,255,255,.14);
+    --danger:#FF6B4A;
+    --warn:#F2B441;
+    --glass-blur:26px;
+    --glass-veil:rgba(12,16,24,.42);
+    --halo:rgba(79,207,232,.30);
+    --amb-strength:22%;
+    --shadow:0 30px 70px rgba(0,0,0,.62);
+    --shadow-1:0 2px 12px rgba(0,0,0,.30);
+    --shadow-2:0 16px 40px rgba(0,0,0,.46);
+    --panel-shadow:0 8px 32px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  /* animatable colours for the ambient light field (base.css .ambient) */
+  @property --glow-a{syntax:"<color>";inherits:false;initial-value:#008cbf}
+  @property --glow-b{syntax:"<color>";inherits:false;initial-value:#009654}
+  @property --glow-c{syntax:"<color>";inherits:false;initial-value:#008cbf}

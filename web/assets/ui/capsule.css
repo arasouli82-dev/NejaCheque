@@ -1,0 +1,67 @@
+/* UI kit -- theme + language capsule (.corner-toggles). Fixed top-left on
+   plain pages; shell.css re-docks it into .topbar-tools when ui.js
+   finds #topbarTools. Behaviour (toggle, persist, pulse) in ui.js.
+
+   <div class="corner-toggles" id="cornerToggles">
+     <button class="dial" id="btnTheme" type="button"><svg id="themeDialIcon" ...></svg></button>
+     <button class="dial dial-lang" id="btnLang" type="button"><span class="lang-text" id="langDialText">EN</span></button>
+   </div> */
+
+  /* ---------- CORNER TOGGLES (theme + language capsule) ---------- */
+  .corner-toggles{
+    position:fixed;top:18px;left:18px;z-index:80;
+    display:flex;align-items:stretch;border-radius:var(--radius-pill);overflow:hidden;
+    border:1px solid var(--line);
+    background:color-mix(in srgb,var(--paper-1) 78%,transparent);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    box-shadow:var(--shadow-1),inset 0 1px 0 rgba(255,255,255,.06);
+    transition:background .5s ease,border-color .5s ease,box-shadow .3s ease,transform .3s cubic-bezier(.22,1,.36,1);
+  }
+  .corner-toggles:hover{transform:translateY(-1px);box-shadow:var(--shadow-2),inset 0 1px 0 rgba(255,255,255,.08)}
+  .corner-toggles::before{
+    content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:linear-gradient(180deg,rgba(255,255,255,.10),transparent 55%);
+  }
+  .corner-toggles::after{
+    content:"";position:absolute;top:0;bottom:0;width:40%;z-index:2;pointer-events:none;
+    background:linear-gradient(75deg,transparent,rgba(255,255,255,.16) 45%,transparent 80%);
+    transform:translateX(-160%) skewX(-18deg);
+    transition:transform .75s cubic-bezier(.22,1,.36,1);
+  }
+  .corner-toggles:hover::after{transform:translateX(220%) skewX(-18deg)}
+  .dial{
+    position:relative;z-index:3;width:40px;height:36px;padding:0;border:0;background:transparent;
+    display:flex;align-items:center;justify-content:center;color:var(--ink-faint);cursor:pointer;
+    transition:background .2s ease,color .2s ease;
+  }
+  .dial:hover{background:color-mix(in srgb,var(--brand-blue) 12%,transparent);color:var(--brand-blue)}
+  .dial.state-dark:not(:hover){color:#8fb2e0}
+  .dial.state-light:not(:hover){color:#e3ac4a}
+  .dial.state-fa:not(:hover){color:#cf90a6}
+  .dial.state-en:not(:hover){color:var(--brand-blue)}
+  .dial:active{transform:scale(.95)}
+  .dial:focus-visible{outline:2px solid var(--brand-blue);outline-offset:-2px}
+  .dial svg{width:15px;height:15px;display:block}
+  .dial-lang{font-size:11px;font-weight:700;letter-spacing:.02em;border-inline-start:1px solid var(--line)}
+  .dial-lang .lang-text{display:inline-block;font-family:var(--font-mono)}
+  .dial-lang .lang-text[lang="fa"]{font-family:var(--font-fa);font-size:13px;letter-spacing:0}
+  .dial::after{content:"";position:absolute;inset:0;pointer-events:none}
+  .dial.glow::after{animation:dialAura .9s cubic-bezier(.22,1,.36,1)}
+  @keyframes dialAura{
+    0%{opacity:1;box-shadow:inset 0 0 0 1px var(--glow-color,transparent),inset 0 0 12px 2px var(--glow-color,transparent)}
+    100%{opacity:0;box-shadow:inset 0 0 0 1px var(--glow-color,transparent),inset 0 0 18px 5px var(--glow-color,transparent)}
+  }
+  .dial svg,.dial-lang .lang-text{transition:opacity .32s cubic-bezier(.22,1,.36,1),transform .32s cubic-bezier(.22,1,.36,1)}
+  .dial.swap svg{animation:iconCross .5s cubic-bezier(.22,1,.36,1)}
+  @keyframes iconCross{
+    0%{opacity:0;transform:scale(.75) rotate(-14deg)}
+    55%{opacity:1;transform:scale(1.05) rotate(3deg)}
+    100%{opacity:1;transform:scale(1) rotate(0)}
+  }
+  .dial-lang.swap .lang-text{animation:textCross .42s cubic-bezier(.22,1,.36,1)}
+  @keyframes textCross{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:translateY(0)}}
+
+  @media (prefers-reduced-motion:reduce){
+    .corner-toggles::after,.dial.glow::after,.dial.swap svg,.dial-lang.swap .lang-text{animation:none!important}
+    .corner-toggles:hover{transform:none}
+  }

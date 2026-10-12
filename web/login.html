@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ورود — نژا چک</title>
+<meta name="theme-color" id="metaThemeColor" content="#05070C">
+<link rel="icon" type="image/svg+xml" href="assets/brand/favicon.svg">
+<link rel="stylesheet" href="assets/ui/tokens.css">
+<link rel="stylesheet" href="assets/ui/base.css">
+<link rel="stylesheet" href="assets/ui/capsule.css">
+<link rel="stylesheet" href="assets/brand/brand.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400..800&display=swap">
+<script>window.ODIQ_UI_CONFIG = {storagePrefix: "nejacheque", defaultTheme: "auto"};</script>
+<script src="assets/brand/brand.js"></script>
+<script src="assets/ui/ui.js"></script>
+<style>
+  [hidden]{display:none!important}
+  body{overflow:auto}
+  .wrap{position:relative;z-index:1;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding-inline:16px;padding-block:32px}
+  .box{width:min(400px,100%);padding:28px 26px}
+  .head{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:20px;text-align:center}
+  .head img{width:64px;height:64px}
+  .head h1{margin:0;font-size:24px;font-weight:800;letter-spacing:-.01em}
+  .head p{margin:0;color:var(--ink-faint);font-size:13px;line-height:1.8}
+  .err{color:var(--danger);font-size:12.5px;min-height:1.5em;margin:-4px 0 8px}
+  .box .btn.primary{width:100%;padding:11px}
+  .foot{margin-top:16px;text-align:center;font-size:11.5px;color:var(--ink-faint)}
+  .corner-toggles{position:fixed;top:16px;inset-inline-end:16px;z-index:5}
+</style>
+</head>
+<body>
+<div class="ambient" aria-hidden="true"><span></span><span></span><span></span></div>
+<div class="corner-toggles" id="cornerToggles">
+  <button class="dial" id="btnTheme" type="button" title="تم روشن / تاریک">
+    <svg id="themeDialIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
+  </button>
+</div>
+<div class="wrap">
+  <form class="card box" id="form" novalidate>
+    <div class="head">
+      <img data-brand-logo src="assets/brand/logo.svg" alt="">
+      <h1 data-brand-name>نژا چک</h1>
+      <p id="intro">برای ادامه وارد شوید.</p>
+    </div>
+    <div class="field" id="nameField" hidden><label for="name">نام شما</label><input id="name" autocomplete="name"></div>
+    <div class="field"><label for="username">نام کاربری</label><input class="ltr" id="username" autocomplete="username" required></div>
+    <div class="field"><label for="password">رمز عبور</label><input class="ltr" id="password" type="password" autocomplete="current-password" required>
+      <div class="field-hint" id="pwHint" hidden>دست‌کم ۸ نویسه</div></div>
+    <div class="err" id="err" role="alert"></div>
+    <button class="btn primary" id="go" type="submit">ورود</button>
+    <div class="foot"><span id="ver"></span><br><span data-brand-credit></span></div>
+  </form>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+(async () => {
+  const $ = id => document.getElementById(id);
+  const next = new URLSearchParams(location.search).get("next") || "/";
+  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  let setup = false;
+  try {
+    const st = await (await fetch("/api/auth/state")).json();
+    setup = st.setup_needed;
+    $("ver").textContent = "نسخهٔ " + st.version;
+    const me = await fetch("/api/auth/me", { credentials: "same-origin" });
+    if (me.ok && !setup) { location.replace(safeNext); return; }
+  } catch (e) {}
+  if (setup) {
+    $("intro").textContent = "اولین اجرا: حساب مدیر را بسازید. بعد از داخل برنامه کاربرهای دیگر را اضافه می‌کنید.";
+    $("nameField").hidden = false; $("pwHint").hidden = false;
+    $("password").autocomplete = "new-password"; $("go").textContent = "ساختن حساب مدیر و ورود";
+  }
+  $("username").focus();
+  $("form").addEventListener("submit", async e => {
+    e.preventDefault();
+    $("err").textContent = ""; $("go").disabled = true;
+    const body = { username: $("username").value.trim(), password: $("password").value, name: $("name").value.trim() };
+    try {
+      const r = await fetch(setup ? "/api/auth/setup" : "/api/auth/login", { method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data?.detail?.error?.message || "ورود ممکن نشد.");
+      location.replace(safeNext);
+    } catch (err) { $("err").textContent = err.message; $("go").disabled = false; }
+  });
+})();
+</script>
+</body>
+</html>

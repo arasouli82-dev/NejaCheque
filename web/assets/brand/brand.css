@@ -1,0 +1,28 @@
+/* Neja brand colours: lapis (لاجوردی), saffron (زعفرانی), parchment (کاغذی).
+   The UI kit reads these tokens (assets/ui/tokens.css); light values on :root, dark on html[data-theme="dark"]. */
+:root{
+  --brand-blue:#1B3170;          /* lapis: buttons, links, focus */
+  --brand-green:#1E7D5B;         /* success */
+  --brand-orange:#C9861A;        /* selected field, highlights */
+  --accent:#A87412;              /* money amounts (saffron, darkened for text) */
+  --grad-brand:linear-gradient(150deg,#2A4590 0%,#1B3170 60%,#152760 100%);
+  --halo:rgba(27,49,112,.22);
+}
+html[data-theme="dark"]{
+  --brand-blue:#8EA8F0;
+  --brand-green:#4FD1A0;
+  --brand-orange:#F0B648;
+  --accent:#E9B949;
+  --grad-brand:linear-gradient(150deg,#3552A8 0%,#2A4590 60%,#22397A 100%);
+  --halo:rgba(142,168,240,.28);
+}
+img.brand-mark{width:42px;height:42px;object-fit:contain;flex:none}
+.brand-name{font-family:var(--font-fa);font-weight:900;letter-spacing:0;font-size:19px}
+.brand-credit{margin:8px 0 0;text-align:center;font-size:11.5px;color:var(--ink-faint)}
+.brand-credit a,.about a,.foot a{color:var(--brand-blue);text-decoration:none}
+.brand-credit a:hover,.about a:hover,.foot a:hover{text-decoration:underline}
+.about-body{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.about-body img{width:72px;height:72px;flex:none}
+.about dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 18px;font-size:13.5px;flex:1;min-width:240px}
+.about dt{color:var(--ink-faint)}
+.about dd{margin:0;overflow-wrap:anywhere}

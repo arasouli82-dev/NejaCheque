@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Neja">
+  <rect width="120" height="120" rx="26" fill="#1B3170"/>
+  <path d="M30 57 A30 30 0 0 0 90 57" fill="none" stroke="#F6F0E2" stroke-width="13" stroke-linecap="round"/>
+  <rect x="51" y="31" width="18" height="18" rx="2" fill="#E0A526" transform="rotate(45 60 40)"/>
+</svg>

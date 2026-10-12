@@ -1,0 +1,123 @@
+<p align="center">
+  <img src="web/assets/brand/logo.svg" width="88" alt="">
+</p>
+
+<div dir="rtl" align="center">
+
+# نژا چک
+
+**صدور، چاپ و پیگیری چک‌های صیادی** — ساختهٔ [علی رسولی‌نژاد](https://www.linkedin.com/in/ali-rasoulinejad-bb400b243) · نژا
+
+</div>
+
+<div dir="rtl">
+
+نرم‌افزار تحت وب و چندکاربره برای نوشتن چک روی برگهٔ واقعی با هر چاپگری (حتی لیزری A4)، و پیگیری چک‌های صادره و دریافتی تا وصول. روی یک رایانهٔ اداره یا یک سرور اجرا می‌شود و همه از مرورگر کار می‌کنند.
+
+## امکانات
+
+- **چاپ چک** با پیش‌نمایش هم‌اندازهٔ برگه؛ تاریخ و مبلغ خودکار به حروف؛ ارقام فارسی؛ `#` و ستاره در جای خالی
+- **قالب ۳۰ بانک** (چیدمان یکسان صیادی) و **ساخت قالب دلخواه** از روی عکس برگه با کشیدن و رها کردن
+- قلم، اندازه، چینش و جهت جداگانه برای هر نوشته؛ قلم نستعلیق؛ چاپ **نگاتیو** و **پرفراژ**
+- «عدم پشت‌نویسی»، خط کشیدن روی «حواله‌کرد»، توضیحات روی برگه، ته‌چک اختیاری
+- **دسته‌چک‌ها**: سریال برگ بعدی خودکار، نقشهٔ برگ‌های مصرف‌شده و باطل، هشدار اتمام دسته‌چک
+- **صف چاپ**، **سری اقساطی**، **ورود از اکسل/CSV**
+- **چک‌های صادره** با وضعیت (صادرشده، وصول‌شده، برگشتی، باطل)، فیلتر، گزارش چاپی و خروجی اکسل
+- **چک‌های دریافتی** از مشتری‌ها، از دریافت تا خواباندن و وصول
+- **طرف حساب‌ها**، **رسید پرداخت** قابل تنظیم، **تعطیلات رسمی** شمسی و قمری
+- **یادآوری سررسید** در برنامه، در پیام‌رسان **بله** و با **پیامک** (کاوه‌نگار، SMS.ir)
+- **کاربران** با دو نقش مدیر و کاربر، **پشتیبان‌گیری و بازگردانی**، تم روشن و تاریک
+
+## اجرا
+
+**ویندوز:** پایتون ۳.۱۰ یا تازه‌تر را نصب کنید، `run.bat` را اجرا کنید و <http://localhost:8080> را باز کنید.
+
+**لینوکس / مک:**
+```bash
+./run.sh
+```
+
+**داکر:**
+```bash
+docker compose up -d
+```
+
+در اولین ورود، **حساب مدیر** را می‌سازید؛ کاربرهای دیگر را از «تنظیمات ← کاربران» اضافه کنید. رایانه‌های دیگر شبکه از `http://<IP-سرور>:8080` وارد می‌شوند. اگر پشت HTTPS اجرا می‌کنید، `NEJACHEQUE_COOKIE_SECURE=1` بگذارید.
+
+## تنظیمات
+
+همهٔ تنظیم‌ها اختیاری است؛ `.env.example` را به `.env` کپی و ویرایش کنید:
+
+| متغیر | پیش‌فرض | کار |
+|---|---|---|
+| `NEJACHEQUE_DATA_DIR` | `./data` | جای پایگاه‌داده و کلید رمزگذاری |
+| `NEJACHEQUE_SECRET_KEY` | ساخته می‌شود | کلید رمزگذاری توکن بله و کلید پیامک |
+| `NEJACHEQUE_COOKIE_SECURE` | `0` | روی HTTPS بگذارید `1` |
+| `NEJACHEQUE_SESSION_DAYS` | `14` | مدت اعتبار ورود |
+| `NEJACHEQUE_REMINDERS` | `1` | حلقهٔ یادآوری روزانه |
+| `PORT` | `8080` | درگاه |
+
+همهٔ داده‌ها در پوشهٔ `data/` است؛ از آن یا از «تنظیمات ← پشتیبان‌گیری» مرتب پشتیبان بگیرید.
+
+## نخستین چاپ
+
+۱. اندازهٔ برگهٔ چک را با خط‌کش (از لبه تا لبه، همراه ته‌چک) در «ویرایش چیدمان ← برگه و چاپگر» وارد کنید.
+۲. یک «چاپ آزمایشی» روی کاغذ سفید بگیرید و جلوی نور روی برگه بگذارید.
+۳. اگر همه‌چیز کمی جابه‌جاست، «جابه‌جایی افقی/عمودی» را تنظیم کنید؛ اگر یک نوشته جابه‌جاست، همان را بکشید.
+۴. در پنجرهٔ چاپ مرورگر **Margins = None** و **Scale = 100%** بگذارید.
+
+## برند خودتان
+
+اگر می‌خواهید نسخهٔ خودتان را با نام و نشان دیگری منتشر کنید، همه‌چیز در `web/assets/brand/` است: `brand.js` (نام و شعار)، `logo.svg` و `favicon.svg`، و `brand.css` (رنگ‌ها). طبق مجوز، نام سازندهٔ اصلی در فایل LICENSE بماند.
+
+## فونت‌ها بدون اینترنت
+
+صفحه‌ها فونت وزیرمتن را از Google Fonts می‌گیرند. برای شبکهٔ بدون اینترنت، فایل‌های woff2 وزیرمتن ([مخزن رسمی](https://github.com/rastikerdar/vazirmatn)، مجوز OFL) را در `web/assets/fonts/` بگذارید و یک `@font-face` در `brand.css` اضافه کنید.
+
+## توسعه
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+- `nejacheque/app.py`: صفحه‌ها، ورود، API
+- `nejacheque/service.py`: منطق چک‌ها، یادآوری، بله و پیامک
+- `nejacheque/db.py`: پایگاه‌دادهٔ SQLite
+- `web/index.html` و `web/assets/cheque/cheque.js`: برنامهٔ مرورگر (چیدمان، چاپ، فرم‌ها)
+- `web/assets/ui/`: کیت رابط کاربری
+
+## یادداشت‌ها
+
+- چیدمان استاندارد از روی یک تصویر نمونهٔ چک صیادی اندازه گرفته شده و ممکن است با برگهٔ شما چند میلی‌متر فرق کند؛ همیشه یک چاپ آزمایشی بگیرید.
+- تعطیلات قمری با تقویم ام‌القری حساب می‌شود و ممکن است یک روز با اعلام رسمی فرق کند؛ در تنظیمات قابل اصلاح است.
+- این برنامه چک را در سامانهٔ صیاد ثبت نمی‌کند؛ پس از چاپ، ثبت را در اپ بانک انجام دهید.
+
+## سازنده
+
+**علی رسولی‌نژاد** (نژا)
+- لینکدین: [ali-rasoulinejad-bb400b243](https://www.linkedin.com/in/ali-rasoulinejad-bb400b243)
+- ایمیل: ali.rasoulinejaad@gmail.com
+
+پیشنهاد، گزارش اشکال و همکاری با آغوش باز پذیرفته می‌شود.
+
+## مجوز
+
+[MIT](LICENSE) — © ۲۰۲۶ علی رسولی‌نژاد (نژا)
+
+</div>
+
+---
+
+## English
+
+**Neja Cheque** is a self-hosted web app by **Ali Rasoulinejad (Neja)** for writing, printing and tracking Iranian Sayad cheques: true-size layout editor with drag-and-drop templates for 30 banks and custom leaves, amounts and dates in Persian words, chequebook leaf tracking, issued and received cheque registers, Excel/CSV import, official holidays, receipts, Bale and SMS due-date reminders, multi-user with manager/operator roles, backup and restore.
+
+```bash
+./run.sh            # or run.bat on Windows, or: docker compose up -d
+# open http://localhost:8080 and create the first (manager) account
+```
+
+Settings via environment variables (see `.env.example`). Tests: `pip install -r requirements-dev.txt && pytest`. License: MIT.
+
+Author: **Ali Rasoulinejad** · [LinkedIn](https://www.linkedin.com/in/ali-rasoulinejad-bb400b243) · ali.rasoulinejaad@gmail.com
