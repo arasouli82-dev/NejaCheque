@@ -182,6 +182,8 @@ tr.cur td{background:color-mix(in srgb,var(--brand-blue) 7%,transparent)}
 .pm-check{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:var(--radius-s);background:color-mix(in srgb,var(--brand-blue) 7%,transparent);border:1px solid color-mix(in srgb,var(--brand-blue) 22%,transparent);font-size:12.5px;line-height:1.8}
 .pm-check label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
 .pm-check input{accent-color:var(--brand-blue);margin-top:5px}
+.pm-bg{display:flex;gap:10px;align-items:flex-start;margin-top:12px;font-size:13px;cursor:pointer}
+.pm-bg small{display:block;color:var(--ink-faint);font-size:12px}
 .pm-big{font-size:14px;line-height:2;color:var(--ink-soft);margin:0 0 10px}
 .modal-actions{flex-wrap:wrap}
 .undo-bar{position:fixed;z-index:61;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px;padding:7px;padding-inline-start:16px;border-radius:999px;border:1px solid var(--line-strong);background:var(--paper-1);
@@ -263,7 +265,7 @@ tr.soon td:first-child{color:var(--warn);font-weight:700}
   .pg:last-child{break-after:auto;page-break-after:auto}
   :root{color-scheme:light}
   #print-root,.pg{background:#fff!important;color:#000}
-  .fld.neg{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .fld.neg,.mk-bank{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 @media (prefers-reduced-motion:reduce){.ed .fld{transition:none}}
 </style>

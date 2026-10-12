@@ -429,15 +429,16 @@ function fitSize(text, f, t, fill) {
 }
 
 /* ================= build a cheque element ================= */
-function buildCheque(ch, t, mode) {        // mode: "ed" | "print" | "test"
+function buildCheque(ch, t, mode) {        // mode: "ed" | "print" | "test" | "bg" (print with the leaf picture, on plain paper)
   const el = document.createElement("div");
   el.className = "chq" + (mode === "ed" ? " ed" + (S.edit ? "" : " locked") : "") + (mode === "test" ? " test" : "");
   el.style.cssText = `width:${t.w}mm;height:${t.h}mm;font-family:${fontStack(t.font)}`;
-  const ox = mode === "ed" ? 0 : +t.offX || 0, oy = mode === "ed" ? 0 : +t.offY || 0;
-  if (mode === "ed") {
-    const bg = bgOf(t), p = document.createElement("div");
+  const ox = mode === "ed" || mode === "bg" ? 0 : +t.offX || 0, oy = mode === "ed" || mode === "bg" ? 0 : +t.offY || 0;
+  if (mode === "ed" || mode === "bg") {
+    const bg = bgOf(t), p = document.createElement(mode === "bg" && bg ? "img" : "div");
     p.className = "paper" + (bg ? "" : " blank");
-    if (bg) { p.style.backgroundImage = `url("${bg}")`; p.style.opacity = (t.imgOp || 100) / 100; }
+    if (bg && mode === "bg") { p.src = bg; p.alt = ""; p.style.cssText = "width:100%;height:100%"; }      // an <img> prints even with «Background graphics» off
+    else if (bg) { p.style.backgroundImage = `url("${bg}")`; p.style.opacity = (t.imgOp || 100) / 100; }
     el.appendChild(p);
     const b = BANKS[ch.bank];
     if (b && bg === LEAF) {     // bank name over the «BANK NAME» placeholder of the sample leaf
@@ -1066,6 +1067,7 @@ function confirmDo(title, text, yes, fn) { $("#cfTitle").textContent = title; $(
 $("#cfYes").addEventListener("click", () => { modal.close("confirmModal"); if (cfAction) cfAction(); cfAction = null; });
 
 /* ================= printing ================= */
+let printBg = false;          // print-review switch: leaf picture under the words, for plain paper
 function printCheques(list, test, build) { printCheques.prep(list, test, build); return (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => window.print()); }
 printCheques.prep = function (list, test, build) {
   const root = $("#print-root"), sizes = new Map();
@@ -1076,7 +1078,7 @@ printCheques.prep = function (list, test, build) {
     if (!sizes.size) sizes.set("", `@page{size:${pw}mm ${ph}mm;margin:0}`);
     sizes.set(pn, `@page ${pn}{size:${pw}mm ${ph}mm;margin:0}`);
     const pg = document.createElement("div"); pg.className = "pg"; pg.style.cssText = `width:${pw}mm;height:${ph}mm;page:${pn}`;
-    const c = build ? build(ch, t) : buildCheque(ch, t, test ? "test" : "print");
+    const c = build ? build(ch, t) : buildCheque(ch, t, test ? "test" : printBg && bgOf(t) ? "bg" : "print");
     c.style.position = "absolute";
     if (a4) { c.style.right = t.a4r + "mm"; c.style.top = t.a4t + "mm"; }
     else if (rot) { c.style.left = 0; c.style.top = 0; c.style.transformOrigin = "0 0"; c.style.transform = "rotate(90deg) translateY(-100%)"; }
@@ -1096,6 +1098,8 @@ async function logPrinted(list) {
 const paperName = t => t.paper === "a4" ? "A4 (برگه روی کاغذ چسبیده)" : `${faSize(t)} mm${t.paper === "cheque-rot" ? "، عمودی" : ""}`;
 /* print in two steps: review what goes on paper, then ask how it came out; only confirmed prints are logged */
 function openPrint(list, test) {
+  const canBg = !test && list.some(c => bgOf(tplOf(c)));
+  if (!canBg) printBg = false;
   const bad = test ? [] : list.filter(c => !c.amount || !c.payee || leafProblem(c));
   const papers = [...new Set(list.map(c => paperName(tplOf(c))))];
   $("#pmTitle").textContent = test ? "چاپ آزمایشی روی کاغذ سفید" : list.length > 1 ? `چاپ ${toFa(list.length)} برگ چک` : "چاپ چک";
@@ -1107,8 +1111,11 @@ function openPrint(list, test) {
     + `<div class="pm-check">
         <div>اندازهٔ کاغذ: <b>${papers.map(esc).join(" / ")}</b></div>
         <label><input type="checkbox" class="pm-ok"> در پنجرهٔ چاپ Margins را <b>None</b> و Scale را <b>100%</b> می‌گذارم.</label>
-        ${test ? "" : `<label><input type="checkbox" class="pm-ok"> برگهٔ چک را ${feedOf(tplOf(list[0])) ? "همان‌طور که در تصویر است" : "از سمت درست"} در چاپگر گذاشته‌ام.</label>`}
-      </div>` + (test ? "" : feedCard(tplOf(list[0])));
+        ${test ? "" : printBg ? `<label><input type="checkbox" class="pm-ok"> کاغذ سفید در چاپگر گذاشته‌ام.</label>`
+          : `<label><input type="checkbox" class="pm-ok"> برگهٔ چک را ${feedOf(tplOf(list[0])) ? "همان‌طور که در تصویر است" : "از سمت درست"} در چاپگر گذاشته‌ام.</label>`}
+      </div>` + (canBg ? `<label class="switch pm-bg"><input type="checkbox" id="pmBg"${printBg ? " checked" : ""}><span class="toggle-switch"></span>
+          <span><b>چاپ با تصویر برگه</b><small>روی کاغذ سفید، برای نسخهٔ بایگانی یا نمونه؛ نه روی برگهٔ چک</small></span></label>` : "")
+      + (test || printBg ? "" : feedCard(tplOf(list[0])));
   const ready = () => !bad.length && [...document.querySelectorAll(".pm-ok")].every(x => x.checked);
   $("#pmActions").innerHTML = `<button class="btn primary" id="pmGo" type="button">باز کردن پنجرهٔ چاپ</button><button class="btn" type="button" data-modal-close>انصراف</button>`
     + (bad.length ? `<span class="field-hint bad" style="align-self:center">${toFa(bad.length)} برگ ناقص است؛ اول کاملش کنید.</span>` : "");
@@ -1116,6 +1123,7 @@ function openPrint(list, test) {
   $("#pmBody").onchange = () => { goBtn.disabled = !ready(); };
   goBtn.onclick = () => printCheques(list, test).then(() => afterPrint(list, test));
   $("#pmBody").onclick = e => { if (e.target.closest("[data-feed]")) openFeed(tplOf(list[0]), () => openPrint(list, test)); };
+  if (canBg) $("#pmBg").onchange = e => { printBg = e.target.checked; openPrint(list, test); };
   modal.open("printModal");
 }
 function afterPrint(list, test) {
