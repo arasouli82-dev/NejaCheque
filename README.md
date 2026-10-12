@@ -6,9 +6,15 @@
 
 # نژا چک
 
-**صدور، چاپ و پیگیری چک‌های صیادی** — ساختهٔ [علی رسولی‌نژاد](https://www.linkedin.com/in/ali-rasoulinejad-bb400b243) · نژا
+**نرم‌افزار رایگان چاپ چک صیادی** — ساختهٔ [علی رسولی‌نژاد](https://www.linkedin.com/in/ali-rasoulinejad-bb400b243) · نژا
+
+[**⬇ دانلود برای ویندوز**](https://github.com/arasouli82-dev/NejaCheque/releases/latest) · [وب‌سایت](https://arasouli82-dev.github.io/NejaCheque/)
 
 </div>
+
+<p align="center">
+  <img src="docs/screenshot.jpg" alt="صفحهٔ صدور چک در نژا چک" width="100%">
+</p>
 
 <div dir="rtl">
 

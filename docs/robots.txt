@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://arasouli82-dev.github.io/NejaCheque/sitemap.xml
