@@ -180,7 +180,7 @@ const ON_DEMAND = new Set(["noEndorse", "note", "hawale"]);     // empty unless 
 const CORE = new Set(["dateNum", "dateWords", "amountWords", "amountNum", "payee"]);
 const FONTS = [["Vazirmatn", "وزیرمتن"], ["Noto Naskh Arabic", "نسخ"], ["Noto Nastaliq Urdu", "نستعلیق"], ["IranNastaliq", "ایران نستعلیق"],
   ["Lalezar", "لاله‌زار"], ["B Nazanin", "ب نازنین"], ["B Mitra", "ب میترا"], ["B Titr", "ب تیتر"], ["IRANSans", "ایران‌سنس"], ["Tahoma", "تاهوما"]];
-const STD_W = 207.5, STD_H = 80, IMG_W = 700, IMG_H = 270, LAYOUT_VER = 3;
+const STD_W = 207.5, STD_H = 80, IMG_W = 700, IMG_H = 270, LAYOUT_VER = 4;
 function defaultFields(W = STD_W, H = STD_H) {
   const sx = W / IMG_W, sy = H / IMG_H;
   const L = (xl, xr, line, size, o = {}) => ({ r: +((IMG_W - xr) * sx).toFixed(1), t: +(line * sy - size * 1.6 * .3528 * .78).toFixed(1),
@@ -212,7 +212,7 @@ function defaultFields(W = STD_W, H = STD_H) {
 }
 function baseTpl(o) {
   return { id: uid(), ver: LAYOUT_VER, w: STD_W, h: STD_H, font: "Vazirmatn", digits: 1, fill: 0, hash: 1, rial: 1,
-    paper: "cheque", a4r: 1, a4t: 15, offX: 0, offY: 0, imgOp: 100, fields: defaultFields(), extra: {}, tuned: 0, stub: 0, ...o };
+    paper: "tray", a4r: 1, a4t: 15, offX: 0, offY: 0, imgOp: 100, fields: defaultFields(), extra: {}, tuned: 0, stub: 0, ...o };
 }
 // bank templates: one per bank, standard layout. custom templates: built by the user from their own leaf.
 const bankTpl = bank => baseTpl({ kind: "bank", bank, name: bankName(bank), sample: 1 });
@@ -263,6 +263,7 @@ function normalize() {
     if (t.stub == null) t.stub = 0;            // the stub is usually left blank, so it is off unless a template turns it on
     if (t.imgOp == null) t.imgOp = t.scanOp || 100;
     if (t.ver !== LAYOUT_VER && (t.ver || 0) < 2 && !t.tuned) { t.w = STD_W; t.h = STD_H; t.fields = defaultFields(); }
+    if ((t.ver || 0) < 4 && (!t.paper || t.paper === "cheque")) t.paper = "tray";
     t.ver = LAYOUT_VER;
     for (const k in FIELDS) if (!t.fields[k]) t.fields[k] = { ...defaultFields(t.w, t.h)[k], on: ON_DEMAND.has(k) ? 1 : 0 };
     try { const old = localStorage.getItem("chequenegar.scan." + t.id); if (old) { localStorage.setItem(IMG + t.id, old); localStorage.removeItem("chequenegar.scan." + t.id); } } catch (e) {}
@@ -1073,13 +1074,26 @@ printCheques.prep = function (list, test, build) {
   const root = $("#print-root"), sizes = new Map();
   root.innerHTML = "";
   for (const ch of list) {               // each cheque uses its own template; mixed sizes get named @page rules
-    const t = tplOf(ch), rot = t.paper === "cheque-rot", a4 = t.paper === "a4";
+    const t = tplOf(ch), rot = t.paper === "cheque-rot", a4 = t.paper === "a4" || t.paper === "tray";
     const pw = a4 ? 210 : rot ? t.h : t.w, ph = a4 ? 297 : rot ? t.w : t.h, pn = `p${pw}x${ph}`.replace(/\./g, "_");
     if (!sizes.size) sizes.set("", `@page{size:${pw}mm ${ph}mm;margin:0}`);
     sizes.set(pn, `@page ${pn}{size:${pw}mm ${ph}mm;margin:0}`);
     const pg = document.createElement("div"); pg.className = "pg"; pg.style.cssText = `width:${pw}mm;height:${ph}mm;page:${pn}`;
     const c = build ? build(ch, t) : buildCheque(ch, t, test ? "test" : printBg && bgOf(t) ? "bg" : "print");
     c.style.position = "absolute";
+    if (t.paper === "tray") {
+      // the leaf in the manual feed: against the page top (the edge that enters first), turned so the chosen edge leads
+      const f = trayFeed(), upright = printBg && !test && !build, edge = upright ? "top" : f.edge;
+      const side = edge === "left" || edge === "right", bw = side ? t.h : t.w, bh = side ? t.w : t.h;
+      // «left/right» are as the user sees the feed; when the printer prints the face that lies down, the page is mirrored to them
+      const align = upright ? "center" : f.face === "down" ? { left: "right", right: "left" }[f.align] || "center" : f.align || "center";
+      const box = document.createElement("div");
+      box.style.cssText = `position:absolute;top:0;width:${bw}mm;height:${bh}mm;left:${align === "left" ? 0 : align === "right" ? 210 - bw : (210 - bw) / 2}mm`;
+      c.style.left = (bw - t.w) / 2 + "mm"; c.style.top = (bh - t.h) / 2 + "mm";
+      c.style.transform = `rotate(${{ top: 0, bottom: 180, right: -90, left: 90 }[edge]}deg)`;
+      box.appendChild(c); pg.appendChild(box); root.appendChild(pg);
+      continue;
+    }
     if (a4) { c.style.right = t.a4r + "mm"; c.style.top = t.a4t + "mm"; }
     else if (rot) { c.style.left = 0; c.style.top = 0; c.style.transformOrigin = "0 0"; c.style.transform = "rotate(90deg) translateY(-100%)"; }
     else { c.style.left = 0; c.style.top = 0; }
@@ -1095,7 +1109,7 @@ async function logPrinted(list) {
   else { const at = new Date().toISOString(); S.issued = items.map(x => ({ ...x, id: "L" + uid(), status: "issued", printed_at: at })).concat(S.issued); }
   if (S.settings.autoPayee) for (const ch of list) if (ch.payee.trim()) upsertPayee({ name: ch.payee.trim(), nid: ch.payeeId, reason: ch.reason });
 }
-const paperName = t => t.paper === "a4" ? "A4 (برگه روی کاغذ چسبیده)" : `${faSize(t)} mm${t.paper === "cheque-rot" ? "، عمودی" : ""}`;
+const paperName = t => t.paper === "tray" ? "A4 (چک در ورودی دستی)" : t.paper === "a4" ? "A4 (برگه روی کاغذ چسبیده)" : `${faSize(t)} mm${t.paper === "cheque-rot" ? "، عمودی" : ""}`;
 /* print in two steps: review what goes on paper, then ask how it came out; only confirmed prints are logged */
 function openPrint(list, test) {
   const canBg = !test && list.some(c => bgOf(tplOf(c)));
@@ -1112,7 +1126,7 @@ function openPrint(list, test) {
         <div>اندازهٔ کاغذ: <b>${papers.map(esc).join(" / ")}</b></div>
         <label><input type="checkbox" class="pm-ok"> در پنجرهٔ چاپ Margins را <b>None</b> و Scale را <b>100%</b> می‌گذارم.</label>
         ${test ? "" : printBg ? `<label><input type="checkbox" class="pm-ok"> کاغذ سفید در چاپگر گذاشته‌ام.</label>`
-          : `<label><input type="checkbox" class="pm-ok"> برگهٔ چک را ${feedOf(tplOf(list[0])) ? "همان‌طور که در تصویر است" : "از سمت درست"} در چاپگر گذاشته‌ام.</label>`}
+          : `<label><input type="checkbox" class="pm-ok"> برگهٔ چک را ${tplOf(list[0]).paper === "tray" || feedOf(tplOf(list[0])) ? "همان‌طور که در تصویر است" : "از سمت درست"} در چاپگر گذاشته‌ام.</label>`}
       </div>` + (canBg ? `<label class="switch pm-bg"><input type="checkbox" id="pmBg"${printBg ? " checked" : ""}><span class="toggle-switch"></span>
           <span><b>چاپ با تصویر برگه</b><small>روی کاغذ سفید، برای نسخهٔ بایگانی یا نمونه؛ نه روی برگهٔ چک</small></span></label>` : "")
       + (test || printBg ? "" : feedCard(tplOf(list[0])));
@@ -1150,24 +1164,33 @@ function afterPrint(list, test) {
   }
 }
 /* ================= which way the leaf goes into the printer =================
-   Nobody knows this up front and it differs per printer, so it is measured once: the user marks a plain
-   sheet with an arrow, puts it in the way they'd put a cheque, prints a sheet whose four edges are labelled,
-   and reads which label sits at the arrow head and which face got the print. Saved per paper type. */
+   «tray» (the default): every printer driver knows A4 but few know a 207.5×80 page, and with an unknown
+   size the driver prints somewhere on an A4 instead — off the leaf. So the page is A4 and the cheque is
+   drawn where the leaf really sits in the manual feed: against the leading edge (the page top), centred
+   or against one guide, turned so the edge the user feeds first is at the top. Narrow side first by
+   default: most lasers refuse paper shorter than ~127 mm in the feed direction, and 80 mm is too short.
+   Which face the printer prints on differs per printer, so the guide measures it once with a marked sheet.
+   The cheque-size papers («cheque», «cheque-rot», for printers set up with that size) keep the older
+   guide that also measures the entering edge. Everything is saved per paper type. */
 const FEED_EDGE = { top: "لبهٔ بالای چک", bottom: "لبهٔ پایین چک", right: "سمت تاریخ و آرم بانک", left: "سمت ته‌چک" };
+const FEED_ALIGN = { center: "وسط ورودی (راهنماهای کاغذ دو طرف چک را بگیرند)", left: "چسبیده به کنار چپ ورودی", right: "چسبیده به کنار راست ورودی" };
 const feedKey = t => t.paper || "cheque";
 const feedOf = t => (S.settings.feed || {})[feedKey(t)] || null;
-function feedSentence(f) {
-  return `چک را <b>${f.face === "up" ? "رو به بالا" : "رو به پایین"}</b> بگذارید${f.face === "up" ? " (نوشته‌های چک به سمت شما)" : " (نوشته‌های چک به سمت زیر)"} و <b>${FEED_EDGE[f.edge]}</b> را اول به داخل چاپگر بدهید.`;
+const trayFeed = () => ({ edge: "right", align: "center", ...((S.settings.feed || {}).tray || {}) });
+function feedSentence(f, tray) {
+  const face = f.face ? `<b>${f.face === "up" ? "رو به بالا" : "رو به پایین"}</b> (نوشته‌های چک ${f.face === "up" ? "به سمت شما" : "به سمت زیر"})` : "";
+  return `${face ? "چک را " + face + " بگذارید و " : ""}<b>${FEED_EDGE[f.edge]}</b> را اول به داخل چاپگر بدهید${tray ? `؛ ${FEED_ALIGN[f.align || "center"]}` : ""}.`;
 }
 // top view: printer slot above, the leaf below it turned so the entering edge (orange) faces the slot
 function feedSvg(f) {
-  const rot = { top: 0, bottom: 180, right: -90, left: 90 }[f.edge], down = f.face !== "up";
+  const rot = { top: 0, bottom: 180, right: -90, left: 90 }[f.edge], down = f.face === "down";
+  const x = { center: 100, left: 70, right: 130 }[f.align || "center"];
   const edge = { top: "M-50 -20H50", bottom: "M-50 20H50", right: "M50 -20V20", left: "M-50 -20V20" }[f.edge];
   return `<svg class="feed-svg" viewBox="0 0 200 160" aria-hidden="true">
     <rect x="28" y="4" width="144" height="24" rx="5" fill="#44506a"/><rect x="44" y="24" width="112" height="5" rx="2" fill="#1d2433"/>
     <text x="100" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Vazirmatn,Tahoma">چاپگر</text>
-    <path d="M182 128V44m-7 9 7-9 7 9" fill="none" stroke="#E0A526" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-    <g transform="translate(100 90) scale(${down ? -1 : 1} 1) rotate(${rot})">
+    <path d="M186 128V44m-7 9 7-9 7 9" fill="none" stroke="#E0A526" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <g transform="translate(${x} 90) scale(${down ? -1 : 1} 1) rotate(${rot})">
       <rect x="-50" y="-20" width="100" height="40" rx="2" fill="${down ? "#e9ecf3" : "#fff"}" stroke="#7a8296" stroke-width="1.2"${down ? ' stroke-dasharray="3 2"' : ""}/>
       <g opacity="${down ? .35 : 1}" fill="none" stroke="#9aa3b7" stroke-width="1.6" stroke-linecap="round">
         <path d="M-27 -18V18" stroke-dasharray="2 2" stroke-width="1"/><path d="M-18 -4H40M-18 4H40M-18 12H14"/>
@@ -1175,59 +1198,76 @@ function feedSvg(f) {
       </g>
       <path d="${edge}" stroke="#E0A526" stroke-width="4" stroke-linecap="round"/>
     </g>
-    <text x="100" y="155" text-anchor="middle" font-size="10" fill="#7a8296" font-family="Vazirmatn,Tahoma">${down ? "رو به پایین (از پشت دیده می‌شود)" : "رو به بالا"}</text>
+    <text x="100" y="155" text-anchor="middle" font-size="10" fill="#7a8296" font-family="Vazirmatn,Tahoma">${f.face ? down ? "رو به پایین (از پشت دیده می‌شود)" : "رو به بالا" : ""}</text>
   </svg>`;
 }
 function feedCard(t) {
-  const f = feedOf(t);
-  return f
-    ? `<div class="feed-card">${feedSvg(f)}<div><b>این‌طور در چاپگر بگذارید</b><p>${feedSentence(f)}</p><button class="btn ghost sm" type="button" data-feed>دوباره بسنج</button></div></div>`
+  const tray = t.paper === "tray", f = tray ? trayFeed() : feedOf(t);
+  if (f && (f.face || !tray) && f.edge) return `<div class="feed-card">${feedSvg(f)}<div><b>این‌طور در چاپگر بگذارید</b><p>${feedSentence(f, tray)}</p>
+    <button class="btn ghost sm" type="button" data-feed>دوباره بسنج</button></div></div>`;
+  return tray
+    ? `<div class="feed-card none">${feedSvg(f)}<div><b>چک را در ورودی دستی چاپگر بگذارید</b><p>${feedSentence(f, true)} رو به بالا یا پایین بودنش به چاپگر بستگی دارد؛ با یک کاغذ سفید در یک دقیقه معلوم می‌شود.</p>
+        <button class="btn sm" type="button" data-feed>راهنمای گذاشتن چک</button></div></div>`
     : `<div class="feed-card none"><div><b>نمی‌دانید چک را از کدام طرف در چاپگر بگذارید؟</b>
         <p>با یک کاغذ سفید، در یک دقیقه معلوم می‌شود و از این به بعد همین‌جا نشانتان می‌دهیم.</p>
         <button class="btn sm" type="button" data-feed>راهنمای گذاشتن چک</button></div></div>`;
 }
-// the guide sheet: same page size as a real print, each edge of the leaf labelled
+// the guide sheet: the leaf's outline with each edge labelled, placed exactly like a real print
 function feedSheet(t) {
   const el = document.createElement("div"); el.className = "chq feed-sheet";
   el.style.cssText = `width:${t.w}mm;height:${t.h}mm`;
   el.innerHTML = `<span class="fe fe-top">▲ بالا</span><span class="fe fe-bottom">پایین ▼</span>
     <span class="fe fe-right">سمت تاریخ</span><span class="fe fe-left">سمت ته‌چک</span>
-    <span class="fe-mid">نوک فلشی که کشیدید کنار کدام نوشته است؟<br>همان را در برنامه بزنید.</span>`;
+    <span class="fe-mid">${t.paper === "tray" ? "چک درست جای همین کادر می‌نشیند." : "نوک فلشی که کشیدید کنار کدام نوشته است؟<br>همان را در برنامه بزنید."}</span>`;
   return el;
 }
+const tabsHtml = (q, opts, cur) => `<div class="tabs" data-q="${q}">${Object.entries(opts).map(([v, l]) => `<button class="tab${v === cur ? " active" : ""}" type="button" data-v="${v}">${l}</button>`).join("")}</div>`;
 function openFeed(t, back) {
-  const printSheet = () => printCheques([cur()], false, (ch, tt) => feedSheet(tt)).then(ask);
+  const tray = t.paper === "tray", ans = tray ? { ...trayFeed(), face: "" } : { face: "", edge: "" };
+  const keep = () => { S.settings.feed = { ...(S.settings.feed || {}), [feedKey(t)]: { ...ans } }; };
+  const printSheet = () => { if (tray) { const face = ans.face; ans.face = trayFeed().face || ""; keep(); ans.face = face; }
+    return printCheques([cur()], false, (ch, tt) => feedSheet(tt)).then(ask); };
+  const pick = (root, onPick) => root.onclick = e => {
+    const b = e.target.closest(".tab[data-v]"); if (!b) return;
+    const g = b.parentElement; ans[g.dataset.q] = b.dataset.v;
+    g.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x === b)); onPick && onPick();
+  };
   $("#pmTitle").textContent = "چک را چطور در چاپگر بگذارم؟";
   $("#pmBody").onclick = $("#pmBody").onchange = null;
-  $("#pmBody").innerHTML = `<ol class="feed-steps">
-      <li>یک <b>کاغذ سفید</b> معمولی بردارید و با خودکار رویش یک <b>فلش</b> بکشید.</li>
-      <li>کاغذ را <b>درست همان‌جایی که چک را می‌گذارید</b> در چاپگر بگذارید: روی فلش‌دار رو به بالا، و نوک فلش به سمت داخل چاپگر.</li>
+  $("#pmBody").innerHTML = (tray ? `<div class="feed-q"><b>چک را از کدام لبه به چاپگر می‌دهید؟</b>
+        ${tabsHtml("edge", { right: "سمت تاریخ (پیشنهادی)", left: "سمت ته‌چک", top: "لبهٔ بالا", bottom: "لبهٔ پایین" }, ans.edge)}
+        <span class="field-hint">بیشتر چاپگرهای لیزری کاغذی را که در جهت ورود کوتاه‌تر از ۱۲ سانت باشد نمی‌کشند؛ پس چک را از سمت باریکش بدهید.</span></div>
+      <div class="feed-q"><b>ورودی دستی چاپگر کاغذ را کجا نگه می‌دارد؟</b>
+        ${tabsHtml("align", { center: "وسط", left: "کنار چپ", right: "کنار راست" }, ans.align)}</div>` : "")
+    + `<ol class="feed-steps">
+      <li>یک <b>کاغذ ${tray ? "A4 " : ""}سفید</b> بردارید و با خودکار رویش یک <b>${tray ? "علامت" : "فلش"}</b> بکشید.</li>
+      <li>کاغذ را <b>درست همان‌جایی که چک را می‌گذارید</b> در چاپگر بگذارید، روی ${tray ? "علامت‌دار" : "فلش‌دار"} رو به بالا${tray ? "" : "، و نوک فلش به سمت داخل چاپگر"}.</li>
       <li>«چاپ برگهٔ راهنما» را بزنید. در پنجرهٔ چاپ Margins را <b>None</b> و Scale را <b>100%</b> بگذارید.</li>
     </ol>`;
+  if (tray) pick($("#pmBody"));
   $("#pmActions").innerHTML = `<button class="btn primary" id="feedGo" type="button">چاپ برگهٔ راهنما</button><button class="btn" type="button" data-modal-close>انصراف</button>`;
   $("#feedGo").onclick = printSheet;
   modal.open("printModal");
   function ask() {
     $("#print-root").innerHTML = "";
-    const ans = { face: "", edge: "" };
+    ans.face = "";
+    if (!tray) ans.edge = "";
     $("#pmTitle").textContent = "برگهٔ راهنما را نگاه کنید";
     $("#pmBody").innerHTML = `<div class="feed-q"><b>۱. نوشته‌ها روی کدام روی کاغذ چاپ شد؟</b>
-        <div class="tabs" data-q="face"><button class="tab" type="button" data-v="up">همان رویی که فلش دارد</button><button class="tab" type="button" data-v="down">پشت کاغذ</button></div></div>
-      <div class="feed-q"><b>۲. نوک فلش کنار کدام نوشته است؟</b>
-        <div class="tabs" data-q="edge">${Object.entries({ top: "بالا", bottom: "پایین", right: "سمت تاریخ", left: "سمت ته‌چک" }).map(([v, l]) => `<button class="tab" type="button" data-v="${v}">${l}</button>`).join("")}</div></div>
-      <p class="field-hint">چیزی چاپ نشد یا چاپگر پیام اندازهٔ کاغذ داد؟ در تنظیمات چاپگر اندازهٔ کاغذ را «Custom» یا نزدیک‌ترین اندازه بگذارید و دوباره چاپ کنید.</p>
+        ${tabsHtml("face", { up: tray ? "همان رویی که علامت دارد" : "همان رویی که فلش دارد", down: "پشت کاغذ" }, "")}</div>`
+      + (tray ? "" : `<div class="feed-q"><b>۲. نوک فلش کنار کدام نوشته است؟</b>
+        ${tabsHtml("edge", { top: "بالا", bottom: "پایین", right: "سمت تاریخ", left: "سمت ته‌چک" }, "")}</div>`)
+      + `<p class="field-hint">${tray ? "کادر چک باید چسبیده به لبه‌ای از کاغذ باشد که اول وارد چاپگر شد. اگر کمی جابه‌جاست، بعداً با «جابه‌جایی افقی/عمودی» درستش کنید."
+          : "چیزی چاپ نشد یا چاپگر پیام اندازهٔ کاغذ داد؟ در «برگه و چاپگر»، کاغذ چاپگر را روی «A4، چک در ورودی دستی» بگذارید."}</p>
       <div id="feedOut"></div>`;
     $("#pmActions").innerHTML = `<button class="btn primary" id="feedSave" type="button" disabled>ذخیره</button><button class="btn" id="feedAgain" type="button">دوباره چاپ کن</button><button class="btn ghost" type="button" data-modal-close>انصراف</button>`;
-    $("#pmBody").onclick = e => {
-      const b = e.target.closest(".tab[data-v]"); if (!b) return;
-      const g = b.parentElement; ans[g.dataset.q] = b.dataset.v;
-      g.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x === b));
+    pick($("#pmBody"), () => {
       const ok = ans.face && ans.edge; $("#feedSave").disabled = !ok;
-      $("#feedOut").innerHTML = ok ? `<div class="feed-card">${feedSvg(ans)}<div><b>نتیجه</b><p>${feedSentence(ans)}</p></div></div>` : "";
-    };
+      $("#feedOut").innerHTML = ok ? `<div class="feed-card">${feedSvg(ans)}<div><b>نتیجه</b><p>${feedSentence(ans, tray)}</p></div></div>` : "";
+    });
     $("#feedAgain").onclick = printSheet;
     $("#feedSave").onclick = () => {
-      S.settings.feed = { ...(S.settings.feed || {}), [feedKey(t)]: { face: ans.face, edge: ans.edge } }; save();
+      keep(); save();
       toast("جهت گذاشتن چک ذخیره شد", "success");
       if (back) back(); else modal.close("printModal");
     };
