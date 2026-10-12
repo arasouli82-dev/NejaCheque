@@ -78,6 +78,23 @@ details.sub-sec>div{padding-top:12px}
 .ed .fld.sel .hdl{display:block}
 .chq.test{outline:.2mm dashed #888}
 .chq.test .fld{outline:.15mm solid #bbb}
+.chq.test .fld.empty{outline:none}
+.chq.test{outline:.2mm solid #999;outline-offset:-.2mm}
+.feed-sheet{outline:.3mm solid #888;outline-offset:-.3mm;color:#333;font-family:Vazirmatn,Tahoma,sans-serif}
+.fe{position:absolute;font:700 11pt/1 Vazirmatn,Tahoma,sans-serif;white-space:nowrap}
+.fe-top{top:3mm;left:50%;transform:translateX(-50%)}
+.fe-bottom{bottom:3mm;left:50%;transform:translateX(-50%)}
+.fe-right{right:3mm;top:50%;writing-mode:vertical-rl;transform:translateY(-50%)}
+.fe-left{left:3mm;top:50%;writing-mode:vertical-rl;transform:translateY(-50%) rotate(180deg)}
+.fe-mid{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font:9pt/1.9 Vazirmatn,Tahoma,sans-serif;color:#777}
+.feed-card{display:flex;gap:14px;align-items:center;padding:12px;margin-top:12px;border-radius:var(--radius-s);border:1px solid color-mix(in srgb,var(--brand-orange) 35%,transparent);background:color-mix(in srgb,var(--brand-orange) 7%,transparent);font-size:12.5px;line-height:1.9}
+.feed-card p{margin:2px 0 8px;color:var(--ink-soft)}
+.feed-card.none{border-style:dashed}
+.feed-svg{width:150px;flex:none}
+.feed-steps{margin:0 0 6px;padding-inline-start:20px;font-size:14px;line-height:2.1;color:var(--ink-soft)}
+.feed-q{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;font-size:13px}
+.feed-q .tabs{flex-wrap:wrap;align-self:flex-start}
+@media (max-width:520px){.feed-card{flex-direction:column;align-items:stretch}.feed-svg{width:100%;max-width:220px;margin:auto}}
 
 /* layout panel */
 .fld-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
@@ -244,7 +261,9 @@ tr.soon td:first-child{color:var(--warn);font-weight:700}
   #print-root{display:block}
   .pg{position:relative;overflow:hidden;break-after:page;page-break-after:always}
   .pg:last-child{break-after:auto;page-break-after:auto}
-  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  :root{color-scheme:light}
+  #print-root,.pg{background:#fff!important;color:#000}
+  .fld.neg{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 @media (prefers-reduced-motion:reduce){.ed .fld{transition:none}}
 </style>
@@ -343,7 +362,7 @@ tr.soon td:first-child{color:var(--warn);font-weight:700}
       <div class="topbar-tools" id="topbarTools">
         <span class="status-pill sync" id="syncPill" title=""><span class="dot"></span><span id="syncTxt">محلی</span></span>
         <button class="btn sm" id="btnReceipt" type="button" title="رسید پرداخت برای امضای گیرنده">رسید</button>
-        <button class="btn sm" id="btnTest" type="button" title="روی کاغذ سفید، با تصویر کم‌رنگ برگه برای تنظیم">چاپ آزمایشی</button>
+        <button class="btn sm" id="btnTest" type="button" title="روی کاغذ سفید، با کادر برگه و هر نوشته، برای تنظیم جای نوشته‌ها">چاپ آزمایشی</button>
         <button class="btn primary sm" id="btnPrint" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="7" rx="1"></rect></svg>
           چاپ این چک
@@ -509,6 +528,7 @@ tr.soon td:first-child{color:var(--warn);font-weight:700}
                       <label class="in-row" style="gap:6px;font-size:12px;color:var(--ink-soft)">واحد روی برگه
                         <select id="tMoney" style="width:auto;padding:5px 8px"><option value="rial">ریال (چک)</option><option value="toman">تومان (فیش، رسید)</option></select></label>
                     </div>
+                    <button class="btn sm" id="tFeed" type="button" style="margin-bottom:8px">چک را از کدام طرف در چاپگر بگذارم؟</button>
                     <p class="card-note">اندازهٔ برگه را با خط‌کش از لبه تا لبه (همراه ته‌چک) بخوانید؛ با عوض کردن آن همهٔ نوشته‌ها هم‌نسبت جابه‌جا می‌شوند. «جابه‌جایی» برای خطای خود چاپگر است.</p>
                   </div>
                 </details>

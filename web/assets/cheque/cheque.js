@@ -211,7 +211,7 @@ function defaultFields(W = STD_W, H = STD_H) {
   };
 }
 function baseTpl(o) {
-  return { id: uid(), ver: LAYOUT_VER, w: STD_W, h: STD_H, font: "Vazirmatn", digits: 1, fill: 1, hash: 1, rial: 1,
+  return { id: uid(), ver: LAYOUT_VER, w: STD_W, h: STD_H, font: "Vazirmatn", digits: 1, fill: 0, hash: 1, rial: 1,
     paper: "cheque", a4r: 1, a4t: 15, offX: 0, offY: 0, imgOp: 100, fields: defaultFields(), extra: {}, tuned: 0, stub: 0, ...o };
 }
 // bank templates: one per bank, standard layout. custom templates: built by the user from their own leaf.
@@ -434,13 +434,13 @@ function buildCheque(ch, t, mode) {        // mode: "ed" | "print" | "test"
   el.className = "chq" + (mode === "ed" ? " ed" + (S.edit ? "" : " locked") : "") + (mode === "test" ? " test" : "");
   el.style.cssText = `width:${t.w}mm;height:${t.h}mm;font-family:${fontStack(t.font)}`;
   const ox = mode === "ed" ? 0 : +t.offX || 0, oy = mode === "ed" ? 0 : +t.offY || 0;
-  if (mode !== "print") {
+  if (mode === "ed") {
     const bg = bgOf(t), p = document.createElement("div");
     p.className = "paper" + (bg ? "" : " blank");
-    if (bg) { p.style.backgroundImage = `url("${bg}")`; p.style.opacity = mode === "test" ? .3 : (t.imgOp || 100) / 100; }
+    if (bg) { p.style.backgroundImage = `url("${bg}")`; p.style.opacity = (t.imgOp || 100) / 100; }
     el.appendChild(p);
     const b = BANKS[ch.bank];
-    if (mode === "ed" && b && bg === LEAF) {     // bank name over the «BANK NAME» placeholder of the sample leaf
+    if (b && bg === LEAF) {     // bank name over the «BANK NAME» placeholder of the sample leaf
       const bn = document.createElement("div"); bn.className = "mk-bank";
       bn.style.cssText = `color:${b.color};right:${(IMG_W - 462) * t.w / IMG_W}mm;top:${47 * t.h / IMG_H}mm;width:${64 * t.w / IMG_W}mm`;
       bn.textContent = bankName(b.code); el.appendChild(bn);
@@ -640,6 +640,7 @@ for (const id in TF) $("#" + id).addEventListener("input", e => {
 });
 $("#tFont").addEventListener("change", e => { tpl().font = e.target.value; tweak(); (document.fonts ? document.fonts.load(`12pt "${e.target.value}"`) : Promise.resolve()).catch(() => {}).then(renderStage); });
 $("#tMoney").addEventListener("change", e => { tpl().money = e.target.value; tweak(); renderStage(); if (e.target.value === "toman") toast("روی چک قانونی مبلغ باید به ریال باشد؛ تومان برای فیش و رسید است."); });
+$("#tFeed").addEventListener("click", () => openFeed(tpl()));
 $("#tPaper").addEventListener("change", e => { tpl().paper = e.target.value; $("#a4Box").hidden = e.target.value !== "a4"; tweak(); });
 for (const [id, p] of [["tDigits","digits"],["tFill","fill"],["tHash","hash"],["tRial","rial"]])
   $("#" + id).addEventListener("change", e => { tpl()[p] = e.target.checked ? 1 : 0; tweak(); renderAll(); });
@@ -1065,8 +1066,8 @@ function confirmDo(title, text, yes, fn) { $("#cfTitle").textContent = title; $(
 $("#cfYes").addEventListener("click", () => { modal.close("confirmModal"); if (cfAction) cfAction(); cfAction = null; });
 
 /* ================= printing ================= */
-function printCheques(list, test) { printCheques.prep(list, test); return (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => window.print()); }
-printCheques.prep = function (list, test) {
+function printCheques(list, test, build) { printCheques.prep(list, test, build); return (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => window.print()); }
+printCheques.prep = function (list, test, build) {
   const root = $("#print-root"), sizes = new Map();
   root.innerHTML = "";
   for (const ch of list) {               // each cheque uses its own template; mixed sizes get named @page rules
@@ -1075,7 +1076,7 @@ printCheques.prep = function (list, test) {
     if (!sizes.size) sizes.set("", `@page{size:${pw}mm ${ph}mm;margin:0}`);
     sizes.set(pn, `@page ${pn}{size:${pw}mm ${ph}mm;margin:0}`);
     const pg = document.createElement("div"); pg.className = "pg"; pg.style.cssText = `width:${pw}mm;height:${ph}mm;page:${pn}`;
-    const c = buildCheque(ch, t, test ? "test" : "print");
+    const c = build ? build(ch, t) : buildCheque(ch, t, test ? "test" : "print");
     c.style.position = "absolute";
     if (a4) { c.style.right = t.a4r + "mm"; c.style.top = t.a4t + "mm"; }
     else if (rot) { c.style.left = 0; c.style.top = 0; c.style.transformOrigin = "0 0"; c.style.transform = "rotate(90deg) translateY(-100%)"; }
@@ -1106,14 +1107,15 @@ function openPrint(list, test) {
     + `<div class="pm-check">
         <div>اندازهٔ کاغذ: <b>${papers.map(esc).join(" / ")}</b></div>
         <label><input type="checkbox" class="pm-ok"> در پنجرهٔ چاپ Margins را <b>None</b> و Scale را <b>100%</b> می‌گذارم.</label>
-        ${test ? "" : `<label><input type="checkbox" class="pm-ok"> برگهٔ چک را رو به بالا و از سمت درست در چاپگر گذاشته‌ام.</label>`}
-      </div>`;
+        ${test ? "" : `<label><input type="checkbox" class="pm-ok"> برگهٔ چک را ${feedOf(tplOf(list[0])) ? "همان‌طور که در تصویر است" : "از سمت درست"} در چاپگر گذاشته‌ام.</label>`}
+      </div>` + (test ? "" : feedCard(tplOf(list[0])));
   const ready = () => !bad.length && [...document.querySelectorAll(".pm-ok")].every(x => x.checked);
   $("#pmActions").innerHTML = `<button class="btn primary" id="pmGo" type="button">باز کردن پنجرهٔ چاپ</button><button class="btn" type="button" data-modal-close>انصراف</button>`
     + (bad.length ? `<span class="field-hint bad" style="align-self:center">${toFa(bad.length)} برگ ناقص است؛ اول کاملش کنید.</span>` : "");
   const goBtn = $("#pmGo"); goBtn.disabled = !ready();
   $("#pmBody").onchange = () => { goBtn.disabled = !ready(); };
   goBtn.onclick = () => printCheques(list, test).then(() => afterPrint(list, test));
+  $("#pmBody").onclick = e => { if (e.target.closest("[data-feed]")) openFeed(tplOf(list[0]), () => openPrint(list, test)); };
   modal.open("printModal");
 }
 function afterPrint(list, test) {
@@ -1137,6 +1139,90 @@ function afterPrint(list, test) {
       if (!S.queue.find(c => c.id === S.cur)) S.cur = S.queue[0].id;
       save(); renderAll(); close(); toast(`${toFa(list.length)} برگ ثبت و از صف برداشته شد`, "success");
     }, fail);
+  }
+}
+/* ================= which way the leaf goes into the printer =================
+   Nobody knows this up front and it differs per printer, so it is measured once: the user marks a plain
+   sheet with an arrow, puts it in the way they'd put a cheque, prints a sheet whose four edges are labelled,
+   and reads which label sits at the arrow head and which face got the print. Saved per paper type. */
+const FEED_EDGE = { top: "لبهٔ بالای چک", bottom: "لبهٔ پایین چک", right: "سمت تاریخ و آرم بانک", left: "سمت ته‌چک" };
+const feedKey = t => t.paper || "cheque";
+const feedOf = t => (S.settings.feed || {})[feedKey(t)] || null;
+function feedSentence(f) {
+  return `چک را <b>${f.face === "up" ? "رو به بالا" : "رو به پایین"}</b> بگذارید${f.face === "up" ? " (نوشته‌های چک به سمت شما)" : " (نوشته‌های چک به سمت زیر)"} و <b>${FEED_EDGE[f.edge]}</b> را اول به داخل چاپگر بدهید.`;
+}
+// top view: printer slot above, the leaf below it turned so the entering edge (orange) faces the slot
+function feedSvg(f) {
+  const rot = { top: 0, bottom: 180, right: -90, left: 90 }[f.edge], down = f.face !== "up";
+  const edge = { top: "M-50 -20H50", bottom: "M-50 20H50", right: "M50 -20V20", left: "M-50 -20V20" }[f.edge];
+  return `<svg class="feed-svg" viewBox="0 0 200 160" aria-hidden="true">
+    <rect x="28" y="4" width="144" height="24" rx="5" fill="#44506a"/><rect x="44" y="24" width="112" height="5" rx="2" fill="#1d2433"/>
+    <text x="100" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Vazirmatn,Tahoma">چاپگر</text>
+    <path d="M182 128V44m-7 9 7-9 7 9" fill="none" stroke="#E0A526" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <g transform="translate(100 90) scale(${down ? -1 : 1} 1) rotate(${rot})">
+      <rect x="-50" y="-20" width="100" height="40" rx="2" fill="${down ? "#e9ecf3" : "#fff"}" stroke="#7a8296" stroke-width="1.2"${down ? ' stroke-dasharray="3 2"' : ""}/>
+      <g opacity="${down ? .35 : 1}" fill="none" stroke="#9aa3b7" stroke-width="1.6" stroke-linecap="round">
+        <path d="M-27 -18V18" stroke-dasharray="2 2" stroke-width="1"/><path d="M-18 -4H40M-18 4H40M-18 12H14"/>
+        <rect x="22" y="-16" width="22" height="6" rx="1" stroke-width="1.2"/><path d="M-46 -12H-31M-46 -5H-31M-46 2H-31" stroke-width="1"/>
+      </g>
+      <path d="${edge}" stroke="#E0A526" stroke-width="4" stroke-linecap="round"/>
+    </g>
+    <text x="100" y="155" text-anchor="middle" font-size="10" fill="#7a8296" font-family="Vazirmatn,Tahoma">${down ? "رو به پایین (از پشت دیده می‌شود)" : "رو به بالا"}</text>
+  </svg>`;
+}
+function feedCard(t) {
+  const f = feedOf(t);
+  return f
+    ? `<div class="feed-card">${feedSvg(f)}<div><b>این‌طور در چاپگر بگذارید</b><p>${feedSentence(f)}</p><button class="btn ghost sm" type="button" data-feed>دوباره بسنج</button></div></div>`
+    : `<div class="feed-card none"><div><b>نمی‌دانید چک را از کدام طرف در چاپگر بگذارید؟</b>
+        <p>با یک کاغذ سفید، در یک دقیقه معلوم می‌شود و از این به بعد همین‌جا نشانتان می‌دهیم.</p>
+        <button class="btn sm" type="button" data-feed>راهنمای گذاشتن چک</button></div></div>`;
+}
+// the guide sheet: same page size as a real print, each edge of the leaf labelled
+function feedSheet(t) {
+  const el = document.createElement("div"); el.className = "chq feed-sheet";
+  el.style.cssText = `width:${t.w}mm;height:${t.h}mm`;
+  el.innerHTML = `<span class="fe fe-top">▲ بالا</span><span class="fe fe-bottom">پایین ▼</span>
+    <span class="fe fe-right">سمت تاریخ</span><span class="fe fe-left">سمت ته‌چک</span>
+    <span class="fe-mid">نوک فلشی که کشیدید کنار کدام نوشته است؟<br>همان را در برنامه بزنید.</span>`;
+  return el;
+}
+function openFeed(t, back) {
+  const printSheet = () => printCheques([cur()], false, (ch, tt) => feedSheet(tt)).then(ask);
+  $("#pmTitle").textContent = "چک را چطور در چاپگر بگذارم؟";
+  $("#pmBody").onclick = $("#pmBody").onchange = null;
+  $("#pmBody").innerHTML = `<ol class="feed-steps">
+      <li>یک <b>کاغذ سفید</b> معمولی بردارید و با خودکار رویش یک <b>فلش</b> بکشید.</li>
+      <li>کاغذ را <b>درست همان‌جایی که چک را می‌گذارید</b> در چاپگر بگذارید: روی فلش‌دار رو به بالا، و نوک فلش به سمت داخل چاپگر.</li>
+      <li>«چاپ برگهٔ راهنما» را بزنید. در پنجرهٔ چاپ Margins را <b>None</b> و Scale را <b>100%</b> بگذارید.</li>
+    </ol>`;
+  $("#pmActions").innerHTML = `<button class="btn primary" id="feedGo" type="button">چاپ برگهٔ راهنما</button><button class="btn" type="button" data-modal-close>انصراف</button>`;
+  $("#feedGo").onclick = printSheet;
+  modal.open("printModal");
+  function ask() {
+    $("#print-root").innerHTML = "";
+    const ans = { face: "", edge: "" };
+    $("#pmTitle").textContent = "برگهٔ راهنما را نگاه کنید";
+    $("#pmBody").innerHTML = `<div class="feed-q"><b>۱. نوشته‌ها روی کدام روی کاغذ چاپ شد؟</b>
+        <div class="tabs" data-q="face"><button class="tab" type="button" data-v="up">همان رویی که فلش دارد</button><button class="tab" type="button" data-v="down">پشت کاغذ</button></div></div>
+      <div class="feed-q"><b>۲. نوک فلش کنار کدام نوشته است؟</b>
+        <div class="tabs" data-q="edge">${Object.entries({ top: "بالا", bottom: "پایین", right: "سمت تاریخ", left: "سمت ته‌چک" }).map(([v, l]) => `<button class="tab" type="button" data-v="${v}">${l}</button>`).join("")}</div></div>
+      <p class="field-hint">چیزی چاپ نشد یا چاپگر پیام اندازهٔ کاغذ داد؟ در تنظیمات چاپگر اندازهٔ کاغذ را «Custom» یا نزدیک‌ترین اندازه بگذارید و دوباره چاپ کنید.</p>
+      <div id="feedOut"></div>`;
+    $("#pmActions").innerHTML = `<button class="btn primary" id="feedSave" type="button" disabled>ذخیره</button><button class="btn" id="feedAgain" type="button">دوباره چاپ کن</button><button class="btn ghost" type="button" data-modal-close>انصراف</button>`;
+    $("#pmBody").onclick = e => {
+      const b = e.target.closest(".tab[data-v]"); if (!b) return;
+      const g = b.parentElement; ans[g.dataset.q] = b.dataset.v;
+      g.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x === b));
+      const ok = ans.face && ans.edge; $("#feedSave").disabled = !ok;
+      $("#feedOut").innerHTML = ok ? `<div class="feed-card">${feedSvg(ans)}<div><b>نتیجه</b><p>${feedSentence(ans)}</p></div></div>` : "";
+    };
+    $("#feedAgain").onclick = printSheet;
+    $("#feedSave").onclick = () => {
+      S.settings.feed = { ...(S.settings.feed || {}), [feedKey(t)]: { face: ans.face, edge: ans.edge } }; save();
+      toast("جهت گذاشتن چک ذخیره شد", "success");
+      if (back) back(); else modal.close("printModal");
+    };
   }
 }
 $("#btnPrint").addEventListener("click", () => openPrint([cur()], false));
